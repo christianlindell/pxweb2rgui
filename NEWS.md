@@ -1,3 +1,39 @@
+# pxweb2rgui 0.21.1
+
+## Rättat
+
+* `pxr_pxweb2_get_data()` med en tabell som bara har en variabel, som
+  `Avverkning/JO0312_07.px` hos `"skogsstyrelsen"`: etiketter som `"2025"`, `"9999"` för
+  senaste perioden, jokertecken och `from()`, `to()` och `range()` fungerar nu. Tidigare
+  gick bara koder, och ett årtal gav ett felmeddelande som skyllde på servern. Det gäller
+  också koden som gränssnittet skriver ut för sådana tabeller.
+* `from()`, `to()` och `range()` tar nu också etiketter, till exempel `"from(2024)"` i en
+  tabell där koderna för år är löpnummer. Ett värde som är en kod betyder alltid koden,
+  och andra värden jämförs med etiketterna.
+* `"9999"` fungerar för variabler som heter `Läsår` eller `Kalenderår` på webbplatser som
+  inte markerar dem som tid, som `"csn"`.
+* Felmeddelandet för ett värde som tabellen saknar visar nu vilka värden tabellen har.
+
+# pxweb2rgui 0.21.0
+
+## Nytt
+
+* Nya inbyggda leverantörer med PxWeb API v1:
+  * `"csn"`: Centrala studiestödsnämnden, studiestöd och studieskulder (bara svenska).
+  * `"energimyndigheten"`: Energimyndigheten, energianvändning och energiförsörjning.
+  * `"mcf"`: Myndigheten för civilt försvar (tidigare MSB), bränder och räddningstjänst.
+    Det gamla namnet `"msb"` fungerar också som `provider` och `base_url`.
+  * `"skogsstyrelsen"` och `"skogsstyrelsen_d"`: Skogsstyrelsens två databaser, skogsbruk
+    och skogsstatistik. Databas D har egna tabeller, bland annat om utrikeshandel.
+  * `"slu_skog"`: SLU Riksskogstaxeringen, skogstillstånd och skogsresurser.
+* Socialstyrelsen och Medlingsinstitutet är inte med. Socialstyrelsen har ett eget API som
+  inte är PxWeb, och för Medlingsinstitutet hittades inget API.
+
+## Dokumentation
+
+* README, båda vignetterna och hjälpsidorna beskriver de nya leverantörerna.
+* Hjälpsidan för `pxr_get_all_tabs()` har ett exempel med `"slu_skog"`.
+
 # pxweb2rgui 0.20.1
 
 ## Rättat

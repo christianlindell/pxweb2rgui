@@ -35,7 +35,10 @@ paths. Obligatorisk.}
 
 \item{query}{Named list where each element is a variable and the value is the
 values to fetch. \code{NULL} fetches all values. Both codes and labels are
-accepted when \code{allow_label_values = TRUE}. With several tables, a variable
+accepted when \code{allow_label_values = TRUE}: a value that is a code in the table
+means that code, and any other value is matched against the labels. So \code{"2025"}
+is the year 2025 also in a table whose codes for years are running numbers,
+and \code{from()}, \code{to()} and \code{range()} take labels too. With several tables, a variable
 that a table has but \code{query} does not name gets all its values in that table,
 as with a single table; \code{NA} leaves it out.}
 
@@ -65,6 +68,13 @@ endpoint, for API v1 the level with the language and database, e.g.
 Götaland (API v1)
 \item \code{"nordicstats"}: Nordic Statistics database, statistics on all the Nordic
 countries from Nordregio (nordicstatistics.org, API v1, English only)
+\item \code{"csn"}: Swedish Board of Student Finance (API v1, Swedish only)
+\item \code{"energimyndigheten"}: Swedish Energy Agency (API v1)
+\item \code{"mcf"}, also \code{"msb"}: Swedish Civil Defence and Resilience Agency, formerly
+MSB (API v1)
+\item \code{"skogsstyrelsen"}, \code{"skogsstyrelsen_d"}: the two databases of the Swedish
+Forest Agency (API v1)
+\item \code{"slu_skog"}: Swedish National Forest Inventory, SLU (API v1)
 }}
 
 \item{on_all_values_invalid}{What happens when every supplied value for a

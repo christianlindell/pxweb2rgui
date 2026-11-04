@@ -16,3 +16,6 @@ head(pxr_get_all_tabs("sjv"))
 
 # Region Västra Götaland: one provider per database
 pxr_get_all_tabs("vgr_demografi")
+
+# A small site with PxWeb API v1: the Swedish National Forest Inventory at SLU
+head(pxr_get_all_tabs("slu_skog"))

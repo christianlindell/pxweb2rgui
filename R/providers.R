@@ -19,7 +19,8 @@
   data.frame(
     id = c("scb", "ssb", "statfin", "fohm", "sjv", "tillvaxtanalys", "konj", "skolverket",
            "vgr_arbetsmarknad", "vgr_demografi", "vgr_folkhalsa", "vgr_gransregional", "vgr_personal",
-           "dst", "nordicstats"),
+           "dst", "nordicstats", "csn", "energimyndigheten", "mcf", "skogsstyrelsen", "skogsstyrelsen_d",
+           "slu_skog"),
     name = c("Statistiska centralbyr\u00e5n (SCB), Sverige",
              "Statistisk sentralbyr\u00e5 (SSB), Norge",
              "Statistikcentralen (StatFin), Finland",
@@ -35,7 +36,13 @@
              "V\u00e4stra G\u00f6talandsregionen: Gr\u00e4nsregional statistik Norge-Sverige",
              "V\u00e4stra G\u00f6talandsregionen: Personalstatistik",
              "Danmarks Statistik, Danmark",
-             "Nordic Statistics (Nordregio), Norden"),
+             "Nordic Statistics (Nordregio), Norden",
+             "Centrala studiestödsnämnden (CSN), Sverige",
+             "Energimyndigheten, Sverige",
+             "Myndigheten för civilt försvar (MCF, tidigare MSB), Sverige",
+             "Skogsstyrelsen, Sverige",
+             "Skogsstyrelsen: statistikdatabas D (bland annat utrikeshandel), Sverige",
+             "SLU Riksskogstaxeringen, Sverige"),
     api_url = c("https://statistikdatabasen.scb.se/api/v2/",
                 "https://data.ssb.no/api/pxwebapi/v2/",
                 "https://pxdata.stat.fi/PXWeb/api/v1/sv/StatFin/",
@@ -50,9 +57,16 @@
                 "https://pxweb2022.vgregion.se/Pxwebb/api/v1/sv/Gr\u00e4nsregional statistik Norge-Sverige/",
                 "https://pxweb2022.vgregion.se/Pxwebb/api/v1/sv/Personalstatistik V\u00e4stra G\u00f6talandsregionen/",
                 .dst_base_url,
-                "https://pxweb.nordicstatistics.org/api/v1/en/Nordic Statistics/"),
-    default_lang = c("sv", "no", "sv", "sv", "sv", "sv", "sv", "sv", rep("sv", 5), "da", "en"),
-    languages = c("sv,en", "no,en", "fi,sv,en", "sv,en", "sv", "sv", "sv,en", "sv", rep("sv", 5), "da,en", "en"),
+                "https://pxweb.nordicstatistics.org/api/v1/en/Nordic Statistics/",
+                "https://statistik.csn.se/PXWeb/api/v1/sv/CSNstat/",
+                "https://pxexternal.energimyndigheten.se/api/v1/sv/Energimyndighetens_statistikdatabas/",
+                "https://statistik.mcf.se/PxWeb/api/v1/sv/PxData/",
+                "https://pxweb.skogsstyrelsen.se/api/v1/sv/Skogsstyrelsens statistikdatabas/",
+                "https://pxweb.skogsstyrelsen.se/api/v1/sv/Skogsstyrelsens statistikdatabas D/",
+                "https://skogsstatistik.slu.se/api/v1/sv/OffStat/"),
+    default_lang = c("sv", "no", "sv", "sv", "sv", "sv", "sv", "sv", rep("sv", 5), "da", "en", rep("sv", 6)),
+    languages = c("sv,en", "no,en", "fi,sv,en", "sv,en", "sv", "sv", "sv,en", "sv", rep("sv", 5), "da,en", "en",
+                  "sv", rep("sv,en", 5)),
     stringsAsFactors = FALSE
   )
 }
@@ -168,6 +182,8 @@ pxweb2_base_url <- function(provider = "scb") {
   if (!grepl("^https?://", base_url)) {
     prov <- pxweb2_providers()
     hit <- match(tolower(base_url), tolower(prov$id))
+    # MSB is now MCF; the old name works but has no row of its own in the list
+    if (is.na(hit) && tolower(base_url) == "msb") hit <- match("mcf", prov$id)
     if (is.na(hit)) {
       stop("Unknown provider '", base_url, "'. Known providers: ",
            paste(prov$id, collapse = ", "),

@@ -24,7 +24,9 @@
 #' @param provider Förvald statistikleverantör, `"scb"`, `"ssb"`, `"dst"`,
 #'   `"statfin"`, `"fohm"`, `"sjv"`, `"tillvaxtanalys"`, `"konj"`, `"skolverket"`,
 #'   `"vgr_arbetsmarknad"`, `"vgr_demografi"`, `"vgr_folkhalsa"`,
-#'   `"vgr_gransregional"`, `"vgr_personal"` eller `"nordicstats"`. Standard är
+#'   `"vgr_gransregional"`, `"vgr_personal"`, `"nordicstats"`, `"csn"`,
+#'   `"energimyndigheten"`, `"mcf"`, `"skogsstyrelsen"`, `"skogsstyrelsen_d"` eller
+#'   `"slu_skog"`. Standard är
 #'   `getOption("pxweb2rgui.provider", "scb")`.
 #'
 #' @return Den genererade koden (osynligt) om den infogades, annars `NULL`.

@@ -36,7 +36,9 @@ library(pxweb2rgui)
 ## Arbetsgången i gränssnittet
 
 1. **Hitta tabell.** Välj statistikleverantör (SCB, SSB eller en annan
-   webbplats med PxWeb API v1 eller v2) och språk. En ruta visar namnet att ange
+   webbplats med PxWeb API v1 eller v2, till exempel CSN, Energimyndigheten, Myndigheten
+   för civilt försvar, tidigare MSB, Skogsstyrelsen med sina två databaser eller SLU
+   Riksskogstaxeringen) och språk. En ruta visar namnet att ange
    som `provider` i funktionerna som börjar med `pxr_`. Bläddra i ämnesträdet eller
    sök på tabellnamn eller tabell-id och klicka på en tabell. Ctrl+klick väljer
    flera tabeller, även mellan sökningar. En leverantör som

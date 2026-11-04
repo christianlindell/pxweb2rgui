@@ -76,7 +76,10 @@
 #'   paths. Obligatorisk.
 #' @param query Named list where each element is a variable and the value is the
 #'   values to fetch. `NULL` fetches all values. Both codes and labels are
-#'   accepted when `allow_label_values = TRUE`. With several tables, a variable
+#'   accepted when `allow_label_values = TRUE`: a value that is a code in the table
+#'   means that code, and any other value is matched against the labels. So `"2025"`
+#'   is the year 2025 also in a table whose codes for years are running numbers,
+#'   and `from()`, `to()` and `range()` take labels too. With several tables, a variable
 #'   that a table has but `query` does not name gets all its values in that table,
 #'   as with a single table; `NA` leaves it out.
 #' @param lang Language for metadata and labels, e.g. `"sv"` or `"en"`. `NULL`
@@ -102,6 +105,13 @@
 #'     Götaland (API v1)
 #'   * `"nordicstats"`: Nordic Statistics database, statistics on all the Nordic
 #'     countries from Nordregio (nordicstatistics.org, API v1, English only)
+#'   * `"csn"`: Swedish Board of Student Finance (API v1, Swedish only)
+#'   * `"energimyndigheten"`: Swedish Energy Agency (API v1)
+#'   * `"mcf"`, also `"msb"`: Swedish Civil Defence and Resilience Agency, formerly
+#'     MSB (API v1)
+#'   * `"skogsstyrelsen"`, `"skogsstyrelsen_d"`: the two databases of the Swedish
+#'     Forest Agency (API v1)
+#'   * `"slu_skog"`: Swedish National Forest Inventory, SLU (API v1)
 #' @param on_all_values_invalid What happens when every supplied value for a
 #'   variable is invalid: `"stop"`, `"*"` or `"null"`. With several tables, this
 #'   only applies when no table can be called, except `"*"`, which gives a table
@@ -243,7 +253,7 @@ pxr_pxweb2_get_data <- function(
   variables_df <- pxweb2_get_variables(metadata)          # fetch all variables
   if (is_dst) config$maxDataCells <- .dst_max_rows(variables_df)
   keep_code_vars <- .pxweb2_resolve_code_variables(variables_df, code_variables)
-  valid_values_list <- pxweb2_get_values(metadata, include_aggregations = include_aggregations, auto_limit = auto_limit, quiet = quiet)      # fetch all unique values for all variables (incl. aggregations if selected)
+  valid_values_list <- pxweb2_get_values(metadata, return_df_if_only_one_variable = FALSE, include_aggregations = include_aggregations, auto_limit = auto_limit, quiet = quiet)      # fetch all unique values for all variables (incl. aggregations if selected)
   
   # build a query list from the supplied query, or one covering all valid values
   query_list <- if (is.null(query)) {
@@ -269,7 +279,8 @@ pxr_pxweb2_get_data <- function(
     ) |>
     .pxweb2_resolve_api_wildcards(
       valid_values_list = valid_values_list,
-      allow_api_wildcards = allow_api_wildcards
+      allow_api_wildcards = allow_api_wildcards,
+      allow_label_values = allow_label_values
     ) |>
     .pxweb2_sanitize_query_values(
       valid_values_list = valid_values_list,
@@ -1334,7 +1345,7 @@ pxweb2_table_needs_update <- function(
     is_time <- codes[i] %in% time_vars
     # for each value what it means in this table, nothing if the table lacks it
     means <- lapply(val, function(v) {
-      vals <- if (is_agg) character() else .pxweb2_expand_value(v, codes[i], valid_values_list, allow_api_wildcards)
+      vals <- if (is_agg) character() else .pxweb2_expand_value(v, codes[i], valid_values_list, allow_api_wildcards, allow_label_values)
       vals[.pxweb2_match_values(vals, ok, allow_label_values) | (is_time & vals %in% latest_period_code)]
     })
     hit <- lengths(means) > 0
@@ -1359,10 +1370,11 @@ pxweb2_table_needs_update <- function(
 }
 
 # A wildcard or from(), to() or range() -> the codes it means; anything else as it is.
-.pxweb2_expand_value <- function(v, var, valid_values_list, allow_api_wildcards = TRUE) {
+.pxweb2_expand_value <- function(v, var, valid_values_list, allow_api_wildcards = TRUE,
+                                 allow_label_values = TRUE) {
   if (!grepl("[*?(]", v)) return(v)
   one <- list(selection = list(list(variableCode = var, valueCodes = list(v))))
-  res <- .pxweb2_resolve_api_wildcards(one, valid_values_list, allow_api_wildcards)
+  res <- .pxweb2_resolve_api_wildcards(one, valid_values_list, allow_api_wildcards, allow_label_values)
   as.character(unlist(res$selection[[1]]$valueCodes, use.names = FALSE))
 }
 
@@ -1555,8 +1567,9 @@ pxweb2_table_needs_update <- function(
 
 .pxweb2_resolve_api_wildcards <- function(query_list,
                                                 valid_values_list,
-                                                allow_api_wildcards = TRUE) {
-  
+                                                allow_api_wildcards = TRUE,
+                                                allow_label_values = TRUE) {
+
   if (!isTRUE(allow_api_wildcards)) return(query_list)
   
   wildcard_to_regex <- function(x) {
@@ -1582,7 +1595,14 @@ pxweb2_table_needs_update <- function(
     }
     
     ok_codes <- ok_tbl$code
-    
+
+    # the position of a code or, if it is not a code, of a label
+    position <- function(x) {
+      pos <- match(x, ok_codes)
+      if (is.na(pos) && isTRUE(allow_label_values)) pos <- match(tolower(x), tolower(ok_tbl$label))
+      pos
+    }
+
     vals_expanded <- purrr::map(vals, function(v) {
       
       # leave full wildcard, top/bottom and aggregation specials alone
@@ -1593,7 +1613,7 @@ pxweb2_table_needs_update <- function(
         return(v)
       }
 
-      # from(code), to(code) and range(code1, code2) are resolved here against
+      # from(), to() and range() take codes or labels. They are resolved here against
       # the table's values (in table order), so that cells can be counted
       # and the request split like any other list of codes
       span <- stringr::str_match(
@@ -1601,8 +1621,8 @@ pxweb2_table_needs_update <- function(
       )
       if (!is.na(span[1, 1])) {
         fn <- tolower(span[1, 2])
-        a <- match(span[1, 3], ok_codes)
-        b <- if (fn == "range") match(span[1, 4], ok_codes) else NA_integer_
+        a <- position(span[1, 3])
+        b <- if (fn == "range") position(span[1, 4]) else NA_integer_
         idx <- switch(fn,
           from  = if (!is.na(a)) seq(a, length(ok_codes)),
           to    = if (!is.na(a)) seq_len(a),
@@ -1688,7 +1708,15 @@ pxweb2_table_needs_update <- function(
   query_list
 }
 
-.pxweb2_sanitize_query_values <- function(query, valid_values_list, 
+# The values a table has, for an error message: labels, or codes if there are none
+.pxweb2_values_summary <- function(ok_tbl) {
+  vals <- ok_tbl$label %||% ok_tbl$code
+  if (length(vals) <= 10) return(paste(vals, collapse = ", "))
+  paste0(paste(utils::head(vals, 5), collapse = ", "), ", ..., ",
+         paste(utils::tail(vals, 5), collapse = ", "), " (", length(vals), " values)")
+}
+
+.pxweb2_sanitize_query_values <- function(query, valid_values_list,
                                                 on_all_values_invalid = "stop",
                                                 warn = TRUE) {
   if (!on_all_values_invalid %in% c("stop", "*", "null")) {
@@ -1724,7 +1752,8 @@ pxweb2_table_needs_update <- function(
           "Invalid values in the query for the variable '", var, "': ",
           paste(vals, collapse = ", "),
           ". The run is stopped because of ",
-          "'on_all_values_invalid = \"stop\"'."
+          "'on_all_values_invalid = \"stop\"'. The table has these values: ",
+          .pxweb2_values_summary(ok_tbl), "."
         )
       }
 

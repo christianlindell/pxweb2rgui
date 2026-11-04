@@ -22,7 +22,9 @@ som skriver koden i det aktiva skriptet i RStudio.}
 \item{provider}{Förvald statistikleverantör, \code{"scb"}, \code{"ssb"}, \code{"dst"},
 \code{"statfin"}, \code{"fohm"}, \code{"sjv"}, \code{"tillvaxtanalys"}, \code{"konj"}, \code{"skolverket"},
 \code{"vgr_arbetsmarknad"}, \code{"vgr_demografi"}, \code{"vgr_folkhalsa"},
-\code{"vgr_gransregional"}, \code{"vgr_personal"} eller \code{"nordicstats"}. Standard är
+\code{"vgr_gransregional"}, \code{"vgr_personal"}, \code{"nordicstats"}, \code{"csn"},
+\code{"energimyndigheten"}, \code{"mcf"}, \code{"skogsstyrelsen"}, \code{"skogsstyrelsen_d"} eller
+\code{"slu_skog"}. Standard är
 \code{getOption("pxweb2rgui.provider", "scb")}.}
 }
 \value{

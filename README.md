@@ -77,9 +77,22 @@ bokstäver.
 | `"vgr_gransregional"` | Västra Götalandsregionen: Gränsregional statistik Norge-Sverige | v1 |
 | `"vgr_personal"` | Västra Götalandsregionen: Personalstatistik | v1 |
 | `"nordicstats"` | Nordic Statistics (Nordregio), Norden | v1 |
+| `"csn"` | Centrala studiestödsnämnden (CSN), Sverige | v1 |
+| `"energimyndigheten"` | Energimyndigheten, Sverige | v1 |
+| `"mcf"` | Myndigheten för civilt försvar (MCF, tidigare MSB), Sverige | v1 |
+| `"skogsstyrelsen"` | Skogsstyrelsen, Sverige | v1 |
+| `"skogsstyrelsen_d"` | Skogsstyrelsen: statistikdatabas D (bland annat utrikeshandel), Sverige | v1 |
+| `"slu_skog"` | SLU Riksskogstaxeringen, Sverige | v1 |
 
 Västra Götalandsregionens server har fem databaser, och varje databas är en egen
-leverantör. Flera tabeller i samma anrop måste därför ligga i samma databas.
+leverantör. Flera tabeller i samma anrop måste därför ligga i samma databas. Samma sak
+gäller Skogsstyrelsens två databaser.
+
+Myndigheten för civilt försvar hette tidigare MSB. Det gamla namnet `"msb"` fungerar
+också i funktionerna, men gränssnittets lista visar bara `"mcf"`.
+
+Socialstyrelsen och Medlingsinstitutet stöds inte. Socialstyrelsen har ett eget API som
+inte är PxWeb, och för Medlingsinstitutet hittades inget API.
 
 Gränssnittet visar namnet för den valda leverantören under fliken "1. Hitta tabell".
 
@@ -113,6 +126,16 @@ pxr_pxweb2_get_data(
   base_url = "sjv"
 )
 pxr_get_all_tabs("https://statistik.konj.se/PxWeb/api/v1/sv/KonjBar/")
+
+# Tabellerna hos SLU Riksskogstaxeringen
+pxr_get_all_tabs("slu_skog")
+
+# Stormfälld skog 2024 och 2025 hos Skogsstyrelsen
+pxr_pxweb2_get_data(
+  "Avverkning/JO0312_07.px",
+  query = list(`År` = c("2024", "2025")),
+  base_url = "skogsstyrelsen"
+)
 ```
 
 | Leverantör | Webbplats |
@@ -125,6 +148,11 @@ pxr_get_all_tabs("https://statistik.konj.se/PxWeb/api/v1/sv/KonjBar/")
 | `"skolverket"` | Skolverket |
 | `"vgr_arbetsmarknad"`, `"vgr_demografi"`, `"vgr_folkhalsa"`, `"vgr_gransregional"`, `"vgr_personal"` | Västra Götalandsregionen |
 | `"nordicstats"` | Nordic Statistics, statistik om alla nordiska länder från Nordregio (bara engelska) |
+| `"csn"` | Centrala studiestödsnämnden, studiestöd och studieskulder (bara svenska) |
+| `"energimyndigheten"` | Energimyndigheten, energianvändning och energiförsörjning |
+| `"mcf"` | Myndigheten för civilt försvar, tidigare MSB: bränder och räddningstjänst |
+| `"skogsstyrelsen"`, `"skogsstyrelsen_d"` | Skogsstyrelsen, skogsbruk och skogsstatistik |
+| `"slu_skog"` | SLU Riksskogstaxeringen, skogstillstånd och skogsresurser |
 
 Det här finns inte i API v1, eller fungerar annorlunda:
 
@@ -258,6 +286,42 @@ och gränssnittet används.
 `pxweb2rgui:::`.
 
 ## Versionshistorik
+
+### 0.21.1 (2026-11-04)
+
+#### Rättat
+
+* `pxr_pxweb2_get_data()` med en tabell som bara har en variabel, som
+  `Avverkning/JO0312_07.px` hos `"skogsstyrelsen"`: etiketter som `"2025"`, `"9999"` för
+  senaste perioden, jokertecken och `from()`, `to()` och `range()` fungerar nu. Tidigare
+  gick bara koder, och ett årtal gav ett felmeddelande som skyllde på servern. Det gäller
+  också koden som gränssnittet skriver ut för sådana tabeller.
+* `from()`, `to()` och `range()` tar nu också etiketter, till exempel `"from(2024)"` i en
+  tabell där koderna för år är löpnummer. Ett värde som är en kod betyder alltid koden,
+  och andra värden jämförs med etiketterna.
+* `"9999"` fungerar för variabler som heter `Läsår` eller `Kalenderår` på webbplatser som
+  inte markerar dem som tid, som `"csn"`.
+* Felmeddelandet för ett värde som tabellen saknar visar nu vilka värden tabellen har.
+
+### 0.21.0 (2026-11-04)
+
+#### Nytt
+
+* Nya inbyggda leverantörer med PxWeb API v1:
+  * `"csn"`: Centrala studiestödsnämnden, studiestöd och studieskulder (bara svenska).
+  * `"energimyndigheten"`: Energimyndigheten, energianvändning och energiförsörjning.
+  * `"mcf"`: Myndigheten för civilt försvar (tidigare MSB), bränder och räddningstjänst.
+    Det gamla namnet `"msb"` fungerar också som `provider` och `base_url`.
+  * `"skogsstyrelsen"` och `"skogsstyrelsen_d"`: Skogsstyrelsens två databaser, skogsbruk
+    och skogsstatistik. Databas D har egna tabeller, bland annat om utrikeshandel.
+  * `"slu_skog"`: SLU Riksskogstaxeringen, skogstillstånd och skogsresurser.
+* Socialstyrelsen och Medlingsinstitutet är inte med. Socialstyrelsen har ett eget API som
+  inte är PxWeb, och för Medlingsinstitutet hittades inget API.
+
+#### Dokumentation
+
+* README, båda vignetterna och hjälpsidorna beskriver de nya leverantörerna.
+* Hjälpsidan för `pxr_get_all_tabs()` har ett exempel med `"slu_skog"`.
 
 ### 0.20.1 (2026-11-04)
 

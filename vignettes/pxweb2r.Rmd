@@ -67,6 +67,12 @@ case:
 | `"vgr_gransregional"` | Region Västra Götaland: cross-border statistics Norway-Sweden | v1 |
 | `"vgr_personal"` | Region Västra Götaland: staff statistics | v1 |
 | `"nordicstats"` | Nordic Statistics (Nordregio), all the Nordic countries | v1 |
+| `"csn"` | Swedish Board of Student Finance | v1 |
+| `"energimyndigheten"` | Swedish Energy Agency | v1 |
+| `"mcf"` | Swedish Civil Defence and Resilience Agency, formerly MSB | v1 |
+| `"skogsstyrelsen"` | Swedish Forest Agency | v1 |
+| `"skogsstyrelsen_d"` | Swedish Forest Agency: database D, including foreign trade | v1 |
+| `"slu_skog"` | Swedish National Forest Inventory, SLU | v1 |
 
 ## PxWeb API v1
 
@@ -76,7 +82,13 @@ providers are `"statfin"` (Statistics Finland), `"fohm"`
 `"tillvaxtanalys"` (Growth Analysis), `"konj"` (National Institute of Economic
 Research), `"skolverket"` (National Agency for Education) and the five databases
 of Region Västra Götaland, whose names start with `"vgr_"`, and `"nordicstats"`
-(Nordic Statistics from Nordregio, in English only). For other sites,
+(Nordic Statistics from Nordregio, in English only), `"csn"` (Board of Student
+Finance), `"energimyndigheten"` (Energy Agency), `"mcf"` (Civil Defence and Resilience
+Agency, formerly MSB; the old name `"msb"` also works), the two databases
+`"skogsstyrelsen"` and `"skogsstyrelsen_d"` (Forest Agency) and `"slu_skog"` (National
+Forest Inventory). The National Board of Health and Welfare has an API of its own that
+is not PxWeb, and no API was found for the National Mediation Office, so neither is
+supported. For other sites,
 give the address with its language and database. An address with `/v1/` (or
 `/v0/`) in it is API v1.
 

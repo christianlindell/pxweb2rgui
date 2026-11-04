@@ -355,6 +355,72 @@ v1_dubbel_get <- function(calls = new.env(), lista = NULL, namn = FALSE) {
   }
 }
 
+# Koderna för år är löpnummer. En tabell med bara året, en med region också.
+v1_lopnr <- function(seen) {
+  list(
+    get = function(url, ..., query = NULL) {
+      if (grepl("?config", url, fixed = TRUE)) {
+        return(v1_response(url, '{"maxValues":100,"maxCells":1000,"maxCalls":30,"timeWindow":10}'))
+      }
+      if (grepl("/En\\.px$", url)) {
+        return(v1_response(url, '{"title":"En","variables":[
+          {"code":"År","text":"År","values":["0","1","2"],"valueTexts":["2023","2024","2025"],"time":true}]}'))
+      }
+      if (grepl("/Tva\\.px$", url)) {
+        return(v1_response(url, '{"title":"Två","variables":[
+          {"code":"Kön","text":"Kön","values":["0","1"],"valueTexts":["Man","Kvinna"]},
+          {"code":"Läsår","text":"Läsår","values":["0","1"],"valueTexts":["2024/2025","2025/2026"]}]}'))
+      }
+      v1_response(url, "{}", 400L)
+    },
+    post = function(url, ..., body) {
+      seen$body <- as.character(body)
+      v1_response(url, '{"version":"2.0","class":"dataset","id":["År"],"size":[1],
+        "dimension":{"År":{"label":"År","category":{"index":{"2":0},"label":{"2":"2025"}}}},"value":[7]}')
+    }
+  )
+}
+
+test_that("labels, 9999 and from(), to(), range() work when codes are running numbers", {
+  pxweb2_clear_cache()
+  on.exit(pxweb2_clear_cache())
+  seen <- new.env()
+  m <- v1_lopnr(seen)
+  local_mocked_bindings(.pxweb2_GET = m$get, .pxweb2_POST = m$post)
+  skickat <- function(v) {
+    q <- list(v); names(q) <- "År"
+    suppressWarnings(pxr_pxweb2_get_data("En.px", query = q, base_url = v1_url, quiet = TRUE))
+    as.character(jsonlite::fromJSON(seen$body)$query$selection$values[[1]])
+  }
+  expect_identical(skickat("2025"), "2")
+  expect_identical(skickat(c("2023", "2025")), c("0", "2"))
+  expect_identical(skickat("9999"), "2")
+  expect_identical(skickat("from(2024)"), c("1", "2"))
+  expect_identical(skickat("to(2024)"), c("0", "1"))
+  expect_identical(skickat("range(2023, 2024)"), c("0", "1"))
+  # ett värde som är en kod betyder koden
+  expect_identical(skickat("1"), "1")
+  expect_identical(skickat("from(1)"), c("1", "2"))
+  # ett värde som saknas stoppas här, med tabellens värden, och skyller inte på servern
+  seen$body <- NULL
+  expect_error(skickat("1999"), "Invalid values.*The table has these values: 2023, 2024, 2025")
+  expect_null(seen$body)
+})
+
+test_that("a table with several variables and running numbers works the same way", {
+  pxweb2_clear_cache()
+  on.exit(pxweb2_clear_cache())
+  seen <- new.env()
+  m <- v1_lopnr(seen)
+  local_mocked_bindings(.pxweb2_GET = m$get, .pxweb2_POST = m$post)
+  q <- list("Kvinna", "9999"); names(q) <- c("Kön", "Läsår")
+  suppressWarnings(pxr_pxweb2_get_data("Tva.px", query = q, base_url = v1_url, quiet = TRUE))
+  sel <- jsonlite::fromJSON(seen$body)$query$selection$values
+  expect_identical(as.character(sel[[1]]), "1")
+  # Läsår är inte markerad som tid på webbplatsen, men känns igen på namnet
+  expect_identical(as.character(sel[[2]]), "1")
+})
+
 test_that("an id that matches tables in several folders is an error that lists them", {
   pxweb2_clear_cache()
   on.exit(pxweb2_clear_cache())

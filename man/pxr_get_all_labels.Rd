@@ -26,6 +26,13 @@ The names are case-insensitive:
 Götaland (API v1)
 \item \code{"nordicstats"}: Nordic Statistics database, statistics on all the Nordic
 countries from Nordregio (nordicstatistics.org, API v1, English only)
+\item \code{"csn"}: Swedish Board of Student Finance (API v1, Swedish only)
+\item \code{"energimyndigheten"}: Swedish Energy Agency (API v1)
+\item \code{"mcf"}, also \code{"msb"}: Swedish Civil Defence and Resilience Agency, formerly
+MSB (API v1)
+\item \code{"skogsstyrelsen"}, \code{"skogsstyrelsen_d"}: the two databases of the Swedish
+Forest Agency (API v1)
+\item \code{"slu_skog"}: Swedish National Forest Inventory, SLU (API v1)
 }}
 
 \item{tab}{Table id, e.g. \code{"TAB638"}, or a vector of table ids, e.g.

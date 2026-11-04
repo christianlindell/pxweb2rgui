@@ -81,6 +81,13 @@
 #'     Götaland (API v1)
 #'   * `"nordicstats"`: Nordic Statistics database, statistics on all the Nordic
 #'     countries from Nordregio (nordicstatistics.org, API v1, English only)
+#'   * `"csn"`: Swedish Board of Student Finance (API v1, Swedish only)
+#'   * `"energimyndigheten"`: Swedish Energy Agency (API v1)
+#'   * `"mcf"`, also `"msb"`: Swedish Civil Defence and Resilience Agency, formerly
+#'     MSB (API v1)
+#'   * `"skogsstyrelsen"`, `"skogsstyrelsen_d"`: the two databases of the Swedish
+#'     Forest Agency (API v1)
+#'   * `"slu_skog"`: Swedish National Forest Inventory, SLU (API v1)
 #' @param updated_since Keep only tables updated on or after this date, given
 #'   as text in the format year-month-day, e.g. `"2026-05-12"`. `NULL` (the
 #'   default) keeps all tables.

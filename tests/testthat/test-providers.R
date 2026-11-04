@@ -14,6 +14,34 @@ test_that("providers include SCB and SSB and resolve to the tables endpoint", {
   expect_error(pxweb2_base_url("finns_inte"), "Unknown provider")
 })
 
+test_that("the Swedish agencies added in 0.21.0 are built-in API v1 providers", {
+  pxweb2_clear_cache()
+  on.exit(pxweb2_clear_cache())
+  # /config saknas: ingen v2, så leverantörerna stannar på v1
+  local_mocked_bindings(
+    .pxweb2_GET = function(url, ...) structure(list(url = url, status_code = 404L), class = "response"),
+    .package = "pxweb2rgui"
+  )
+  ny <- c(
+    csn = "https://statistik.csn.se/PXWeb/api/v1/sv/CSNstat/",
+    energimyndigheten = "https://pxexternal.energimyndigheten.se/api/v1/sv/Energimyndighetens_statistikdatabas/",
+    mcf = "https://statistik.mcf.se/PxWeb/api/v1/sv/PxData/",
+    skogsstyrelsen = "https://pxweb.skogsstyrelsen.se/api/v1/sv/Skogsstyrelsens statistikdatabas/",
+    skogsstyrelsen_d = "https://pxweb.skogsstyrelsen.se/api/v1/sv/Skogsstyrelsens statistikdatabas D/",
+    slu_skog = "https://skogsstatistik.slu.se/api/v1/sv/OffStat/"
+  )
+  p <- pxweb2_providers()
+  expect_true(all(names(ny) %in% p$id))
+  expect_identical(anyDuplicated(p$id), 0L)
+  expect_false("msb" %in% p$id)
+  expect_identical(pxweb2_base_url("MSB"), ny[["mcf"]])
+  for (id in names(ny)) {
+    expect_identical(pxweb2_base_url(id), ny[[id]])
+    expect_identical(p$default_lang[p$id == id], "sv")
+    expect_identical(p$languages[p$id == id], if (id == "csn") "sv" else "sv,en")
+  }
+})
+
 test_that("base_url is normalised whether given as root or tables endpoint", {
   f <- pxweb2rgui:::.pxweb2_normalise_base_url
   expect_identical(f("https://example.org/api/v2"), "https://example.org/api/v2/tables/")

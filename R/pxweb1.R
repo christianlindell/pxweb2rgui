@@ -139,7 +139,8 @@
   out
 }
 
-.pxweb1_time_names <- c("tid", "\u00e5r", "ar", "m\u00e5nad", "kvartal", "period", "time", "year", "month")
+.pxweb1_time_names <- c("tid", "\u00e5r", "ar", "kalender\u00e5r", "l\u00e4s\u00e5r", "m\u00e5nad", "kvartal",
+                        "period", "time", "year", "month")
 
 # {title, variables} -> the same shape as the json-stat2 metadata from API v2.
 # v1 marks the time variable but not the contents variable, which is found by
