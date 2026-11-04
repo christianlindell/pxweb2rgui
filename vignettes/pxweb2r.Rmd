@@ -1,0 +1,254 @@
+---
+title: "Getting started with pxweb2rgui"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting started with pxweb2rgui}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+
+# Reads the example code from inst/examples, so that the vignette always
+# shows the same examples as the help pages
+exempel <- function(fn) {
+  fil <- file.path("..", "inst", "examples", paste0(fn, ".R"))
+  if (!file.exists(fil)) fil <- system.file("examples", paste0(fn, ".R"), package = "pxweb2rgui")
+  readLines(fil, encoding = "UTF-8")
+}
+```
+
+The package fetches statistics from sites that publish data through PxWeb API
+v1 or v2, by default Statistics Sweden (SCB). It finds tables, lists the values of
+their variables, builds the query and returns a tidy tibble. Large requests
+are split into several calls within the API's limits, labels can be used
+instead of codes, `"9999"` means the latest period, and DeSO and RegSO areas
+are split by municipality.
+
+This vignette follows a typical workflow: find a table, look at the values of
+its variables, and fetch the data. All examples need internet access, so the
+vignette shows the code without running it. Run it in your own session; every
+call fetches only a little data.
+
+```{r}
+library(pxweb2rgui)
+```
+
+## Providers and languages
+
+Every function takes the statistics provider, as `provider` or, in
+`pxr_pxweb2_get_data()`, as `base_url`. It can be `"scb"` (Statistics
+Sweden), `"ssb"` (Statistics Norway), `"dst"` (Statistics Denmark), one of the
+providers with PxWeb API v1
+below, or the address of any PxWeb API v1 or v2. The
+addresses of the providers are stored in the package. Without `lang` the
+provider's default language is used, or `getOption("pxweb2r.lang")` if you
+have set it.
+
+`provider` is `"scb"` by default. To leave it out, name the other arguments, as
+in `pxr_get_all_codes(tab = "TAB638")`. The names can be written in upper or lower
+case:
+
+| Name | Statistics agency | API |
+|---|---|---|
+| `"scb"` | Statistics Sweden | v2 |
+| `"ssb"` | Statistics Norway | v2 |
+| `"dst"` | Statistics Denmark | its own |
+| `"statfin"` | Statistics Finland | v1 |
+| `"fohm"` | Public Health Agency of Sweden | v1 |
+| `"sjv"` | Swedish Board of Agriculture | v1 |
+| `"tillvaxtanalys"` | Swedish Agency for Growth Policy Analysis | v1 |
+| `"konj"` | National Institute of Economic Research, Sweden | v1 |
+| `"skolverket"` | Swedish National Agency for Education | v1 |
+| `"vgr_arbetsmarknad"` | Region Västra Götaland: labour market and business | v1 |
+| `"vgr_demografi"` | Region Västra Götaland: demography | v1 |
+| `"vgr_folkhalsa"` | Region Västra Götaland: public health survey | v1 |
+| `"vgr_gransregional"` | Region Västra Götaland: cross-border statistics Norway-Sweden | v1 |
+| `"vgr_personal"` | Region Västra Götaland: staff statistics | v1 |
+| `"nordicstats"` | Nordic Statistics (Nordregio), all the Nordic countries | v1 |
+
+## PxWeb API v1
+
+Every function also works with sites that have PxWeb API v1. The built-in
+providers are `"statfin"` (Statistics Finland), `"fohm"`
+(Public Health Agency of Sweden), `"sjv"` (Swedish Board of Agriculture),
+`"tillvaxtanalys"` (Growth Analysis), `"konj"` (National Institute of Economic
+Research), `"skolverket"` (National Agency for Education) and the five databases
+of Region Västra Götaland, whose names start with `"vgr_"`, and `"nordicstats"`
+(Nordic Statistics from Nordregio, in English only). For other sites,
+give the address with its language and database. An address with `/v1/` (or
+`/v0/`) in it is API v1.
+
+A provider that has both API v1 and v2 is always used through v2, also if you
+give the address of its v1, and a message says so. That applies to Statistics
+Sweden and Statistics Norway. Give the language with `lang`, since the language in
+the v1 address is then not used. For other sites the package checks once per
+session whether v2 exists, so a provider that moves to v2 is followed
+automatically. Tables have other ids in v2, so a path from v1 gives an error that
+explains this; find the new id with `pxr_search_tabs()`.
+
+In API v1 the table id is the table's path, as `pxr_get_all_tabs()` gives it in
+the column `tabellid`, for example
+`"Animalieproduktion/Mejeriproduktion/JO0604A1.px"`. An id without folders, such
+as `"JO0604A1"`, with or without `.px` and in upper or lower case, also works: the
+package finds the table's path in the table list before it asks the site. If tables
+in several folders have that name, such as `"EDUC11"` in Nordic Statistics, you get
+an error that lists their paths, since tables with the same name can have different
+contents. The first such id in a session reads the table list, see below. Apart
+from that the calls look the same, but some things differ because the API lacks
+them:
+
+- `pxr_get_all_tabs()` and `pxr_search_tabs()`: there is no list of tables. The
+  site's search is used to build it, and where there is none every folder is
+  read. On a large site that can take some minutes the first time in a
+  session, and a message says so when it starts.
+- `pxr_pxweb2_get_data()`: there are no code lists. `include_aggregations` gives
+  a warning and is ignored, and the column `kommun` is empty for DeSO areas, also
+  with a warning. `kommun_kod` is complete, and RegSO areas get both.
+- `pxweb2_gui()` and `pxweb2_gui_addin()`: "Välj indelning" is not there,
+  discontinued tables cannot be told apart and the table list shows no periods.
+  The interface says so when such a site is chosen.
+- There is no list of languages. For a site outside the package's list of
+  providers the interface offers only the language in the address, and `lang`
+  in the functions is tried against the site.
+
+## Statistics Denmark
+
+Statistics Denmark has an API of its own, which is not PxWeb, but the functions
+are used in the same way with the provider `"dst"`. The languages are `"da"`
+(default) and `"en"`. The API has no code lists, so `include_aggregations` gives a
+warning and is ignored, and "Välj indelning" is not in the interface. The result
+always has a column with the table's content named `Indhold`, also with
+`lang = "en"`. Large requests are split as usual, and discontinued tables and
+periods work in the table list.
+
+## Find a table
+
+`pxr_get_all_tabs()` lists every table of a provider as a data frame with the
+columns `tabellid`, `tab_name` and `updated`. `pxr_search_tabs()` keeps the
+tables whose names contain any of the texts in `search_str`, without regard to
+upper or lower case. Both take `updated_since`, a date such as `"2026-05-12"`,
+to keep only tables updated on or after that day.
+
+```{r, code = exempel("pxr_get_all_tabs"), eval = FALSE}
+```
+
+```{r, code = exempel("pxr_search_tabs"), eval = FALSE}
+```
+
+## Labels and codes of the variables
+
+`pxr_get_labels()` and `pxr_get_codes()` give the labels or codes of one
+variable, filtered by text (required: `tab`, `var`).
+`pxr_get_all_labels()` and `pxr_get_all_codes()` give every value of a table,
+per variable (required: `tab`).
+
+```{r, code = exempel("pxr_get_labels"), eval = FALSE}
+```
+
+```{r, code = exempel("pxr_get_codes"), eval = FALSE}
+```
+
+```{r, code = exempel("pxr_get_all_labels"), eval = FALSE}
+```
+
+```{r, code = exempel("pxr_get_all_codes"), eval = FALSE}
+```
+
+## Comments on a table
+
+Providers often write comments that are needed to read the figures right, such as
+changes in a regional division. `pxr_get_comments()` (required: `tab`) gives them as
+a `tibble` with one row per comment. The column `niva` tells whether a comment is on
+the whole table, a variable or a value, and `obligatorisk` whether the provider says
+it must be shown with the figures. API v2 has the comments in the metadata. PxWeb API
+v1 sends them only with data, so there the function makes one small data request per
+variable and one more. Statistics Denmark has comments on the whole table only.
+
+```{r, code = exempel("pxr_get_comments"), eval = FALSE}
+```
+
+### Using the labels and codes together
+
+A common task is to pick values by their names and then fetch data with the
+codes. Here the municipalities in Dalarna whose names end with "a" are chosen,
+and their population is fetched for the last two years.
+
+```{r, eval = FALSE}
+kommuner <- pxr_get_codes("scb", "TAB638", "Region", starts_with = "20",
+                          n_chars = 4)
+namn <- pxr_get_codes("scb", "TAB638", "Region", starts_with = "20",
+                      n_chars = 4, to_labels = TRUE)
+valda <- kommuner[endsWith(tolower(namn), "a")]
+
+ar <- tail(pxr_get_all_codes("scb", "TAB638")$Tid, 2)
+
+pxr_pxweb2_get_data("TAB638", query = list(
+  Region = valda, Civilstand = NA, Alder = "tot", Kon = NA,
+  ContentsCode = "BE0101N1", Tid = ar))
+```
+
+The filters can also be used to check a table before you fetch from it, for
+example whether a region is there and what it is called.
+
+```{r, eval = FALSE}
+pxr_get_labels("scb", "TAB638", "Region", contains = "göteborg")
+pxr_get_codes("scb", "TAB638", "Region", starts_with = "1480", to_labels = TRUE)
+```
+
+## Fetch data
+
+`pxr_pxweb2_get_data()` is the main function. `table` is required: a table id
+or a vector of table ids. `query` is a named list with one element per
+variable; variables left out get all their values, and `NA` eliminates a
+variable. Codes and labels both work as values, and `"*"`, `"9999"` (latest
+period), `top(n)`, `from()`, `to()` and `range()` are understood. By default
+only labels are returned; `code_variables` adds a code column,
+`<variable>_kod`, for the variables you name.
+
+```{r, code = exempel("pxr_pxweb2_get_data"), eval = FALSE}
+```
+
+## Several tables
+
+Give `table` a vector of ids and each table is called with the variables and
+values that exist in it. If `Tid = c("2023", "2024", "2025")` is asked for, and
+one table has 2023 and 2024 and another has 2025, the first is called with 2023
+and 2024 and the second with 2025. A table with none of the values asked for in a
+variable it can eliminate is called without the variable, so its rows cover all
+values of that variable. A table is not called if it lacks the values of a variable
+it requires, if such a variable is `NA`, or if it lacks the values of a region.
+`"9999"` is each table's own latest period. Messages say what was done. The results
+are combined with
+`dplyr::bind_rows()`, and the first column, `table_id`, says where a row comes
+from. Columns that only some tables have are `NA` in the rows of the other tables,
+and a warning says which.
+
+`pxr_get_labels()`, `pxr_get_codes()`, `pxr_get_all_labels()` and
+`pxr_get_all_codes()` also take several ids in `tab` and combine the values without
+duplicates. Tables that lack the variable are passed over, and it is an error
+only if no table has it. In the graphical interface, Ctrl+click selects several
+tables.
+
+## The graphical interface
+
+`pxweb2_gui()` opens an interface where you choose provider, language, table,
+variables and values, and get ready-made `pxr_pxweb2_get_data()` code. In
+RStudio it is also an addin, `pxweb2_gui_addin()`. See
+`vignette("pxweb2rgui", package = "pxweb2rgui")`.
+
+## Overview of the functions
+
+| Function | What it does | Required arguments |
+|---|---|---|
+| `pxr_get_all_tabs()` | All tables of a provider, with update dates | – |
+| `pxr_search_tabs()` | Tables whose names contain a text | `search_str` |
+| `pxr_get_labels()` | Labels of a variable, filtered by text | `tab`, `var` |
+| `pxr_get_codes()` | Codes of a variable, filtered by text | `tab`, `var` |
+| `pxr_get_all_labels()` | All labels of a table, per variable | `tab` |
+| `pxr_get_all_codes()` | All codes of a table, per variable | `tab` |
+| `pxr_get_comments()` | Comments on a table, its variables and values | `tab` |
+| `pxr_pxweb2_get_data()` | Fetch data | `table` |
+| `pxweb2_gui()` | Open the graphical interface | – |
+| `pxweb2_gui_addin()` | RStudio addin: statistics table to code | – |

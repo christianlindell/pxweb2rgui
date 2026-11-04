@@ -1,0 +1,20 @@
+# Local R and IDE state
+.Rhistory
+.RData
+.RDataTmp
+.Ruserdata
+.Rproj.user/
+
+# Local credentials and environment settings
+.Renviron
+
+# Package build and check output
+/*.tar.gz
+/*.zip
+/*.Rcheck/
+/tests/testthat/_problems/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+Desktop.ini

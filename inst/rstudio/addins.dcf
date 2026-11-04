@@ -1,0 +1,4 @@
+Name: Statistiktabell till pxweb2r-kod
+Description: Välj statistikleverantör och språk, bläddra bland ämnesområden och tabeller, välj variabler och infoga färdig pxr_pxweb2_get_data()-kod i skriptet.
+Binding: pxweb2_gui_addin
+Interactive: true

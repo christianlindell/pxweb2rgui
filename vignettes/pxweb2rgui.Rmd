@@ -1,0 +1,132 @@
+---
+title: "Kom igång med pxweb2rgui"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Kom igång med pxweb2rgui}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+
+# Läser exempelkoden från inst/examples så att vignetten alltid visar samma
+# exempel som hjälpsidorna
+exempel <- function(fn) {
+  fil <- file.path("..", "inst", "examples", paste0(fn, ".R"))
+  if (!file.exists(fil)) fil <- system.file("examples", paste0(fn, ".R"), package = "pxweb2rgui")
+  readLines(fil, encoding = "UTF-8")
+}
+```
+
+pxweb2rgui är ett grafiskt gränssnitt till paketet pxweb2r. Du väljer
+statistikleverantör och språk, letar upp en tabell i ämnesträdet, väljer
+variabler och värden som på SCB:s webbplats och får färdig
+`pxr_pxweb2_get_data()`-kod att klistra in i ett skript. Data kan också hämtas
+direkt och laddas ner som txt, Excel eller parquet.
+
+Gränssnittet är interaktivt och hämtar tabellistan från leverantören, så
+exemplen kräver internet och en interaktiv R-session. De visas här men körs
+inte när vignetten byggs.
+
+```{r}
+library(pxweb2rgui)
+```
+
+## Arbetsgången i gränssnittet
+
+1. **Hitta tabell.** Välj statistikleverantör (SCB, SSB eller en annan
+   webbplats med PxWeb API v1 eller v2) och språk. En ruta visar namnet att ange
+   som `provider` i funktionerna som börjar med `pxr_`. Bläddra i ämnesträdet eller
+   sök på tabellnamn eller tabell-id och klicka på en tabell. Ctrl+klick väljer
+   flera tabeller, även mellan sökningar. En leverantör som
+   har båda versionerna används alltid med API v2. Hos Danmarks Statistik, som
+   har ett eget API, finns inte "Välj indelning". Med API v1 kan
+   tabellistan ta några minuter att hämta första gången, och "Välj indelning"
+   finns inte. Avslutade tabeller går inte att skilja ut och perioder visas
+   inte i tabellistan. Gränssnittet säger detta när webbplatsen väljs. När en
+   eller flera tabeller är valda går knappen "Kommentarer" att klicka på; den
+   hämtar tabellernas kommentarer och öppnar fliken "4. Kommentarer".
+2. **Välj variabler.** Varje variabel har en lista där ett klick markerar ett
+   värde. Obligatoriska variabler är markerade. För tiden kan du kryssa i
+   "Hämta alltid senaste perioden", som blir `"9999"` i koden. Erbjuder
+   tabellen andra indelningar, t.ex. län, kommuner eller A-regioner, väljs de
+   under "Välj indelning". Med flera tabeller slås variabler med samma kod ihop
+   till en lista med värdena från alla tabeller, och variabler som bara finns i
+   vissa tabeller får egna listor. Varje tabell hämtas med de valda värden den
+   har, och antalet celler visas per tabell. Saknar en tabell de valda värdena i
+   en variabel den kan utelämna hämtas den utan variabeln, och raden visar det,
+   till exempel "TAB638: 2 (utan civilstånd, kön)". Saknar den värdena i en
+   variabel den kräver, till exempel tid, eller i en region, hämtas den inte. En
+   tom lista gör att de tabeller som kräver variabeln inte hämtas, och den stoppar
+   bara hämtningen om alla tabeller kräver variabeln.
+   En variabel som bara är obligatorisk i vissa tabeller säger vilka. Kryssrutan
+   "Visa gemensamma värden" döljer och avmarkerar värden som inte finns i alla
+   tabeller som har variabeln.
+   Värden som bara vissa tabeller har märks med "(bara ...)", och koden får en
+   kommentarsrad om tabeller som hämtas utan en variabel eller inte hämtas alls.
+   Lägger du till en tabell börjar valen i fliken om.
+   Indelningar med samma namn blir ett val, och en indelning som bara vissa
+   tabeller har visas med "(bara ...)". Olika koder med samma namn i olika tabeller
+   blir en rad om varje tabell har högst en sådan kod; annars får namnet koden efter
+   sig, och så är det också med en enda tabell. Har samma kod olika namn i olika
+   tabeller väljs värdena på namn.
+3. **Kod och data.** Här står koden, med `lang` och `base_url`, så att den ger
+   samma resultat oavsett inställningar. Knappen "Välj alla värden" ger `"*"` på
+   alla variabler utom värdevariablerna; med en vald indelning listas värdena i
+   stället. Över 1 miljon celler visar appen en varning, men hämtningen stoppas
+   inte. Kryssa i de variabler som också ska få
+   en kodkolumn (`<variabel>_kod`); i koden anges de med variablernas koder,
+   som är ASCII och lika på alla språk. Kryssa i "R-kompatibla kolumnnamn" för
+   att få kolumnnamn som `region`, `kon` och `folkmangd`: koden får då en rad
+   med `janitor::clean_names()`, och data i appen och nedladdningen får samma
+   namn (kräver paketet janitor). Med "Hämta data" visas datat i appen och kan
+   laddas ner. Båda rutorna ändrar tabellen direkt, utan ny hämtning, och
+   nedladdningen ger det som visas. Ändrar du något som påverkar vad som hämtas,
+   till exempel valda värden, en indelning, tabell, leverantör eller språk, raderas
+   datat och en text säger att det behöver hämtas på nytt.
+4. **Kommentarer.** Fliken är gråtonad och går inte att klicka på tills knappen
+   "Kommentarer" i flik 1 har gett den innehåll. Den visar samma
+   kommentarer som `pxr_get_comments()`. Varje tabell får en egen ruta med tabell-id
+   och tabellnamn, så att det syns vilken tabell en kommentar hör till. I rutan står
+   först kommentarerna på hela tabellen och sedan de på varje variabel och dess
+   värden. Kommentarerna hämtas när du klickar på knappen, vilket kan ta
+   några sekunder per tabell med PxWeb API v1. De raderas när valet av tabeller
+   ändras eller töms, när leverantör eller språk byts och när appen avslutas;
+   klicka på knappen igen för att hämta dem för det nya valet.
+
+## Öppna gränssnittet
+
+`pxweb2_gui()` öppnar gränssnittet. Ingen parameter är obligatorisk: `viewer`
+anger var det visas (eget fönster, Viewer-panelen eller webbläsaren), `addin`
+lägger till knappen som infogar koden i skriptet, och `provider` väljer vilken
+leverantör som är förvald. I Positron visas appen i Positrons Viewer. Funktionen
+returnerar den infogade koden, eller `NULL`.
+
+```{r, code = exempel("pxweb2_gui"), eval = FALSE}
+```
+
+## RStudio-addin
+
+`pxweb2_gui_addin()` är det som körs från menyn Addins i RStudio ("Statistiktabell
+till pxweb2r-kod"). Den har inga parametrar och öppnar gränssnittet i ett eget
+fönster med knappen "Infoga koden i skriptet och stäng", som skriver koden vid
+markören i det aktiva skriptet. Koden returneras också.
+
+```{r, code = exempel("pxweb2_gui_addin"), eval = FALSE}
+```
+
+## Inställningar
+
+| Inställning | Vad den gör |
+|---|---|
+| `options(pxweb2rgui.provider = "ssb")` | Förvald statistikleverantör |
+| `options(pxweb2r.lang = "en")` | Förvalt språk (om leverantören har det) |
+| `options(pxweb2rgui.positron_viewer = "browser")` | Var appen visas i Positron |
+
+## Översikt över funktionerna
+
+| Funktion | Vad den gör | Obligatoriska parametrar |
+|---|---|---|
+| `pxweb2_gui()` | Öppna det grafiska gränssnittet | – |
+| `pxweb2_gui_addin()` | RStudio-addin: statistiktabell till pxweb2r-kod | – |

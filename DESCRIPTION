@@ -1,0 +1,54 @@
+Package: pxweb2rgui
+Title: Data From PxWeb API v1 and v2 With a Graphical Interface and RStudio Addin
+Version: 0.20.1
+Authors@R: c(
+    person("Peter", "Möller", , "larspetermoller@gmail.com", role = "aut"),
+    person("Christian", "Lindell", , "christian_lindell@yahoo.com", role = c("aut", "cre"))
+  )
+Description: pxweb2r and pxweb2rgui in one package. Tools for fetching data
+    and metadata from a PxWeb API v1 or v2, by default Statistics Sweden's
+    statistical database. Other providers, such as Statistics Norway and
+    Statistics Denmark (which has an API of its own), and every language a provider offers can be used. Handles automatic chunking
+    of large requests, label values in queries, wildcards, "latest period",
+    aggregations, and splitting DeSO and RegSO by municipality. Results are
+    returned as tidy tibbles. A Shiny interface, also available as an RStudio
+    addin, lets the user choose provider, language, table, variables and
+    values, and gives ready-made pxr_pxweb2_get_data() code. Data can be
+    downloaded as txt, Excel or parquet.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Language: en
+Roxygen: list(markdown = TRUE)
+Depends:
+    R (>= 4.1)
+Imports:
+    bslib (>= 0.5.0),
+    dplyr,
+    DT,
+    htmltools,
+    httr,
+    jsonlite,
+    purrr,
+    rjstat,
+    rlang,
+    shiny (>= 1.7.0),
+    stats,
+    stringr,
+    tibble,
+    tidyr,
+    tools,
+    utils
+Suggests:
+    arrow,
+    clipr,
+    janitor,
+    knitr,
+    nanoparquet,
+    openxlsx,
+    rmarkdown,
+    rstudioapi,
+    testthat (>= 3.0.0),
+    writexl
+VignetteBuilder: knitr
+Config/testthat/edition: 3
+Config/roxygen2/version: 8.1.1
