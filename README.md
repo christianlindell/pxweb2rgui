@@ -159,7 +159,7 @@ Det här finns inte i API v1, eller fungerar annorlunda:
 | Funktion | Skillnad i API v1 |
 |---|---|
 | `pxr_get_all_tabs()`, `pxr_search_tabs()` | Ingen tabellista finns. Listan tas fram med webbplatsens sökning, och där den saknas läses alla mappar. På en stor webbplats kan det ta några minuter första gången i en session, och ett meddelande säger det |
-| `pxr_pxweb2_get_data()` | Inga kodlistor: `include_aggregations` ger en varning och ignoreras, och kolumnen `kommun` är tom för DeSO-områden, också med en varning. `kommun_kod` är komplett, och RegSO-områden får båda |
+| `pxr_pxweb2_get_data()` | Inga kodlistor: `include_aggregations` ger en varning och ignoreras, och kolumnen `kommun` är tom för DeSO-områden, också med en varning. `kommun_code` är komplett, och RegSO-områden får båda |
 | `pxr_pxweb2_get_data()` | Enstaka tabeller finns men kan inte levereras som JSON-stat av servern, som är det enda format paketet läser. Felmeddelandet säger det |
 | `pxweb2_gui()`, `pxweb2_gui_addin()` | "Välj indelning" finns inte, avslutade tabeller går inte att skilja ut och perioder visas inte i tabellistan. Gränssnittet säger det när webbplatsen väljs |
 | `pxr_get_labels()`, `pxr_get_codes()`, `pxr_get_all_labels()`, `pxr_get_all_codes()` | Ingen skillnad |
@@ -232,6 +232,11 @@ sökningar. Flik 2 visar då variabler som alla tabeller har för sig, och varia
 som bara finns i vissa tabeller för sig med en rad om vilka tabeller som har dem.
 Variabler med samma kod blir en lista med värdena från alla tabeller.
 
+Listorna med värden i flik 2 fungerar som hos SCB. Ett klick väljer ett värde och
+avmarkerar de andra, Ctrl+klick (Cmd på Mac) lägger till ett värde eller tar bort det,
+och Shift+klick väljer ett intervall från det senast klickade värdet och avmarkerar
+övriga. Ctrl+Shift+klick lägger intervallet till urvalet.
+
 Knappen "Kommentarer" i flik 1 är gråtonad tills en eller flera tabeller är valda. Ett
 klick hämtar samma kommentarer som `pxr_get_comments()` och öppnar fliken "4. Kommentarer",
 som är gråtonad så länge den saknar innehåll. Varje tabell får en egen ruta med tabell-id
@@ -286,6 +291,26 @@ och gränssnittet används.
 `pxweb2rgui:::`.
 
 ## Versionshistorik
+
+### 0.22.0 (2026-11-05)
+
+#### Ändrat
+
+* **Bakåtinkompatibelt:** kodkolumner från `code_variables` och från rutorna i flik 3
+  heter nu `<variabel>_code` i stället för `<variabel>_kod`, till exempel `region_code`.
+  Kolumnen `kommun_kod` från uppdelningen av DeSO och RegSO heter nu `kommun_code`. Kod
+  som använder de gamla namnen behöver ändras. Kolumnerna `var_kod` och `varde_kod` i
+  `pxr_get_comments()` har kvar sina namn.
+* Gränssnittet: listorna med värden i flik 2 fungerar som i SCB:s statistikdatabas.
+  * Ett klick väljer ett värde och avmarkerar de andra. Tidigare lade ett klick till
+    eller tog bort värdet.
+  * Ctrl+klick (Cmd på Mac) lägger till ett värde eller tar bort det.
+  * Shift+klick väljer ett intervall från det senast klickade värdet och avmarkerar
+    övriga. Ctrl+Shift+klick lägger intervallet till urvalet.
+  * Att dra med musen väljer också ett intervall, och avmarkerar övriga om du inte håller
+    ner Ctrl.
+  * Ett klick eller Shift+klick avmarkerar också värden som ett sökord döljer. Använd
+    Ctrl+klick för att bygga ett urval över flera sökningar.
 
 ### 0.21.1 (2026-11-04)
 

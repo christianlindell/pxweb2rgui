@@ -117,7 +117,7 @@ them:
   session, and a message says so when it starts.
 - `pxr_pxweb2_get_data()`: there are no code lists. `include_aggregations` gives
   a warning and is ignored, and the column `kommun` is empty for DeSO areas, also
-  with a warning. `kommun_kod` is complete, and RegSO areas get both.
+  with a warning. `kommun_code` is complete, and RegSO areas get both.
 - `pxweb2_gui()` and `pxweb2_gui_addin()`: "Välj indelning" is not there,
   discontinued tables cannot be told apart and the table list shows no periods.
   The interface says so when such a site is chosen.
@@ -217,7 +217,7 @@ variable; variables left out get all their values, and `NA` eliminates a
 variable. Codes and labels both work as values, and `"*"`, `"9999"` (latest
 period), `top(n)`, `from()`, `to()` and `range()` are understood. By default
 only labels are returned; `code_variables` adds a code column,
-`<variable>_kod`, for the variables you name.
+`<variable>_code`, for the variables you name.
 
 ```{r, code = exempel("pxr_pxweb2_get_data"), eval = FALSE}
 ```

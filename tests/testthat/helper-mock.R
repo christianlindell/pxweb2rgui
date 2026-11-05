@@ -150,14 +150,14 @@ mock_backend <- function(pxweb2r_source = Sys.getenv("PXWEB2R_SRC")) {
       })
       names(vals) <- vapply(meta$dimension, `[[`, "", "label")
       d <- expand.grid(Filter(Negate(is.null), vals), stringsAsFactors = FALSE)
-      # som pxweb2r: kodkolumn <variabel>_kod före klartextkolumnen
+      # som pxweb2r: kodkolumn <variabel>_code före klartextkolumnen
       # code_variables kan vara koder (t.ex. "Region") eller namn
       kod_lab <- vapply(code_variables, function(cv) {
         if (cv %in% names(meta$dimension)) meta$dimension[[cv]]$label else cv
       }, "", USE.NAMES = FALSE)
       for (lab in rev(intersect(kod_lab, names(d)))) {
         pos <- match(lab, names(d))
-        d <- cbind(d[seq_len(pos - 1)], stats::setNames(list(d[[lab]]), paste0(lab, "_kod")),
+        d <- cbind(d[seq_len(pos - 1)], stats::setNames(list(d[[lab]]), paste0(lab, "_code")),
                    d[pos:ncol(d)])
       }
       d$varde <- round(stats::runif(nrow(d), 100, 10000))

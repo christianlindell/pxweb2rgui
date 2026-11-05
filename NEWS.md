@@ -1,3 +1,23 @@
+# pxweb2rgui 0.22.0
+
+## Ändrat
+
+* **Bakåtinkompatibelt:** kodkolumner från `code_variables` och från rutorna i flik 3
+  heter nu `<variabel>_code` i stället för `<variabel>_kod`, till exempel `region_code`.
+  Kolumnen `kommun_kod` från uppdelningen av DeSO och RegSO heter nu `kommun_code`. Kod
+  som använder de gamla namnen behöver ändras. Kolumnerna `var_kod` och `varde_kod` i
+  `pxr_get_comments()` har kvar sina namn.
+* Gränssnittet: listorna med värden i flik 2 fungerar som i SCB:s statistikdatabas.
+  * Ett klick väljer ett värde och avmarkerar de andra. Tidigare lade ett klick till
+    eller tog bort värdet.
+  * Ctrl+klick (Cmd på Mac) lägger till ett värde eller tar bort det.
+  * Shift+klick väljer ett intervall från det senast klickade värdet och avmarkerar
+    övriga. Ctrl+Shift+klick lägger intervallet till urvalet.
+  * Att dra med musen väljer också ett intervall, och avmarkerar övriga om du inte håller
+    ner Ctrl.
+  * Ett klick eller Shift+klick avmarkerar också värden som ett sökord döljer. Använd
+    Ctrl+klick för att bygga ett urval över flera sökningar.
+
 # pxweb2rgui 0.21.1
 
 ## Rättat

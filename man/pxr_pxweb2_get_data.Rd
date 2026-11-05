@@ -103,7 +103,7 @@ several tables get the same variable name, e.g. \code{c(Region = "Kommun")}.}
 \item{deso_regso_versions}{Handling of multiple DeSO/RegSO versions:
 \code{"latest"}, \code{"sum"} or \code{NULL}.}
 
-\item{split_deso_regso_by_municipality}{If \code{TRUE}, \code{kommun_kod} and \code{kommun}
+\item{split_deso_regso_by_municipality}{If \code{TRUE}, \code{kommun_code} and \code{kommun}
 are added as separate columns.}
 
 \item{include_aggregations}{Controls fetching of aggregations: \code{"auto"},
@@ -120,8 +120,8 @@ variable codes, e.g. \code{c("Region", "Kon")} (recommended in scripts: plain
 ASCII and the same in every language), or of labels, e.g.
 \code{c("region", "kön")}, or a numeric vector of positions in the table's
 variable order, e.g. \code{c(1, 3)}. \code{"*"} gives codes for every variable. The
-code column is named after the variable with the suffix \verb{_kod}, e.g.
-\code{region_kod}, and is placed just before the label column. When several
+code column is named after the variable with the suffix \verb{_code}, e.g.
+\code{region_code}, and is placed just before the label column. When several
 tables are fetched at once, positions are resolved per table.}
 
 \item{quiet}{If \code{TRUE}, suppresses the informational messages this function
@@ -153,7 +153,7 @@ either, so \code{include_aggregations} gives a warning and is ignored there. API
 has no code lists, so \code{include_aggregations} gives a warning and is ignored
 there. For the same reason, the column \code{kommun} that
 \code{split_deso_regso_by_municipality} adds is empty for DeSO areas, also with a
-warning; \code{kommun_kod} is complete, and RegSO areas get both. A few API v1
+warning; \code{kommun_code} is complete, and RegSO areas get both. A few API v1
 tables exist but cannot be delivered as JSON-stat by the server, which gives
 an error that says so.
 
@@ -183,7 +183,7 @@ pop <- pxr_pxweb2_get_data(
 )
 pop
 
-# The same in English, with a column of region codes (region_kod) as well
+# The same in English, with a column of region codes (region_code) as well
 pxr_pxweb2_get_data(
   "TAB638",
   query = list(Region = "20", Civilstand = NA, Alder = "tot", Kon = "*",

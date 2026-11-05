@@ -71,7 +71,7 @@ test_that("a failing municipality code list does not stop the data fetch", {
     .pxweb2_municipality_key_from_metadata = function(...) stop("HTTP 500"),
     pxweb2_get_codelist = function(...) tibble::tibble(code = "0114", label = "Upplands Väsby"),
     .package = "pxweb2rgui")
-  df <- data.frame(region_kod = "0114A0010", kommun_kod = "0114", kommun = NA_character_)
+  df <- data.frame(region_code = "0114A0010", kommun_code = "0114", kommun = NA_character_)
   out <- pxweb2rgui:::.pxweb2_fill_deso_municipality_from_metadata(df, metadata = list(),
                                                                base_url = "https://x.invalid/api/v2/tables/")
   expect_equal(out$kommun, "Upplands Väsby")

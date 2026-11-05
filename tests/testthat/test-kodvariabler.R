@@ -30,8 +30,8 @@ test_that("valda kodvariabler hamnar i koden och i hämtningen", {
 
     session$setInputs(hamta_data = 1)
     d <- data_resultat()
-    expect_true(paste0(v$label[1], "_kod") %in% names(d))
-    expect_identical(match(paste0(v$label[1], "_kod"), names(d)) + 1L, match(v$label[1], names(d)))
+    expect_true(paste0(v$label[1], "_code") %in% names(d))
+    expect_identical(match(paste0(v$label[1], "_code"), names(d)) + 1L, match(v$label[1], names(d)))
   })
 })
 
@@ -56,7 +56,7 @@ test_that("koden för kodvariabler är ren ASCII även när namnen har å, ä, �
     expect_identical(rad, '  code_variables = c("Region", "Kon"),')
     expect_true(all(utf8ToInt(rad) < 128))
     session$setInputs(hamta_data = 1)
-    expect_true(all(c("region_kod", "kön_kod") %in% names(data_resultat())))
+    expect_true(all(c("region_code", "kön_code") %in% names(data_resultat())))
   })
 })
 

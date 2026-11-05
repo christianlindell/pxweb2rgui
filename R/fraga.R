@@ -454,10 +454,10 @@ px_query_code <- function(table_id, title, query, include_aggregations = NULL,
 # Kolumnnamnen som janitor::clean_names() ger. Utan janitor returneras
 # data oförändrat.
 # Hämtat data har kodkolumner för alla variabler; de som inte är valda tas bort.
-# Kolumnen heter <variabel>_kod, och namnet på variabeln kan skilja sig mellan tabeller.
+# Kolumnen heter <variabel>_code, och namnet på variabeln kan skilja sig mellan tabeller.
 px_keep_code_columns <- function(d, tables, code_variables) {
   dolda <- unlist(lapply(tables, function(t) {
-    paste0(t$variables$label[!t$variables$code %in% code_variables], "_kod")
+    paste0(t$variables$label[!t$variables$code %in% code_variables], "_code")
   }))
   d[, !names(d) %in% dolda, drop = FALSE]
 }

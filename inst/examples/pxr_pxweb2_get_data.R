@@ -10,7 +10,7 @@ pop <- pxr_pxweb2_get_data(
 )
 pop
 
-# The same in English, with a column of region codes (region_kod) as well
+# The same in English, with a column of region codes (region_code) as well
 pxr_pxweb2_get_data(
   "TAB638",
   query = list(Region = "20", Civilstand = NA, Alder = "tot", Kon = "*",

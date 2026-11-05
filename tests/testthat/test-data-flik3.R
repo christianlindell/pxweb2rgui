@@ -50,11 +50,11 @@ test_that("kodkolumner och kolumnnamn ändras direkt, åt båda hållen, utan ny
     session$setInputs(hamta_data = 1)
     expect_identical(x$rakna$n, 1)
     raa <- data_resultat()
-    region <- paste0(tabell()$variables$label[1], "_kod")
-    kon <- paste0(tabell()$variables$label[2], "_kod")
+    region <- paste0(tabell()$variables$label[1], "_code")
+    kon <- paste0(tabell()$variables$label[2], "_code")
     # utan valda rutor: inga kodkolumner visas, trots att de är hämtade
     expect_true(all(c(region, kon) %in% names(raa)))
-    expect_false(any(grepl("_kod$", names(data_visad()))))
+    expect_false(any(grepl("_code$", names(data_visad()))))
     utan <- names(data_visad())
 
     # på: kolumnen visas, före sin klartextkolumn
@@ -108,11 +108,11 @@ test_that("nedladdningen ger det som visas", {
       strsplit(gsub('"', "", readLines(fil, n = 1, encoding = "UTF-8")), "[\t,;]")[[1]]
     }
     expect_identical(rubrik(), names(data_visad()))
-    expect_false(any(grepl("_kod$", rubrik())))
+    expect_false(any(grepl("_code$", rubrik())))
     session$setInputs(t1_kodvariabler_0 = "Region")
-    expect_true(paste0(tabell()$variables$label[1], "_kod") %in% rubrik())
+    expect_true(paste0(tabell()$variables$label[1], "_code") %in% rubrik())
     session$setInputs(t1_kodvariabler_0 = character(0))
-    expect_false(any(grepl("_kod$", rubrik())))
+    expect_false(any(grepl("_code$", rubrik())))
   })
 })
 
@@ -239,14 +239,14 @@ test_that("ett misslyckat försök raderas också när valen ändras", {
 })
 
 test_that("bara kodkolumner som inte är valda tas bort, även med olika namn i olika tabeller", {
-  d <- data.frame(table_id = "A", region_kod = "1", region = "x", kön_kod = "2", kön = "y",
-                  sex_kod = "2", sex = "y", kommun_kod = "9", value = 1, check.names = FALSE)
+  d <- data.frame(table_id = "A", region_code = "1", region = "x", kön_code = "2", kön = "y",
+                  sex_code = "2", sex = "y", kommun_code = "9", value = 1, check.names = FALSE)
   tabs <- list(
     list(variables = data.frame(code = c("Region", "Kon"), label = c("region", "kön"))),
     list(variables = data.frame(code = c("Region", "Kon"), label = c("region", "sex")))
   )
   expect_named(px_keep_code_columns(d, tabs, "Region"),
-               c("table_id", "region_kod", "region", "kön", "sex", "kommun_kod", "value"))
+               c("table_id", "region_code", "region", "kön", "sex", "kommun_code", "value"))
   expect_named(px_keep_code_columns(d, tabs, "Kon"),
-               c("table_id", "region", "kön_kod", "kön", "sex_kod", "sex", "kommun_kod", "value"))
+               c("table_id", "region", "kön_code", "kön", "sex_code", "sex", "kommun_code", "value"))
 })

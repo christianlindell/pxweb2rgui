@@ -49,7 +49,7 @@
 #' has no code lists, so `include_aggregations` gives a warning and is ignored
 #' there. For the same reason, the column `kommun` that
 #' `split_deso_regso_by_municipality` adds is empty for DeSO areas, also with a
-#' warning; `kommun_kod` is complete, and RegSO areas get both. A few API v1
+#' warning; `kommun_code` is complete, and RegSO areas get both. A few API v1
 #' tables exist but cannot be delivered as JSON-stat by the server, which gives
 #' an error that says so.
 #'
@@ -131,7 +131,7 @@
 #'   several tables get the same variable name, e.g. `c(Region = "Kommun")`.
 #' @param deso_regso_versions Handling of multiple DeSO/RegSO versions:
 #'   `"latest"`, `"sum"` or `NULL`.
-#' @param split_deso_regso_by_municipality If `TRUE`, `kommun_kod` and `kommun`
+#' @param split_deso_regso_by_municipality If `TRUE`, `kommun_code` and `kommun`
 #'   are added as separate columns.
 #' @param include_aggregations Controls fetching of aggregations: `"auto"`,
 #'   `"all"`, `"none"`, `"codelists"`, or a named vector per variable. Not
@@ -145,8 +145,8 @@
 #'   ASCII and the same in every language), or of labels, e.g.
 #'   `c("region", "kön")`, or a numeric vector of positions in the table's
 #'   variable order, e.g. `c(1, 3)`. `"*"` gives codes for every variable. The
-#'   code column is named after the variable with the suffix `_kod`, e.g.
-#'   `region_kod`, and is placed just before the label column. When several
+#'   code column is named after the variable with the suffix `_code`, e.g.
+#'   `region_code`, and is placed just before the label column. When several
 #'   tables are fetched at once, positions are resolved per table.
 #' @param quiet If `TRUE`, suppresses the informational messages this function
 #'   (and the calls it makes internally) would otherwise print -
@@ -176,10 +176,10 @@ pxr_pxweb2_get_data <- function(
     allow_api_wildcards = TRUE,              # TRUE = if the query contains "*" the API's built-in wildcard is used; FALSE = "*" is treated as an ordinary value and matched against valid values in the table
     harmonise_variable_names = NULL,         # used when fetching several tables at once. Pass a named vector, e.g. c("Region" = "Kommun"), and the variable "Kommun" is renamed to "Region" so all tables share the same variable name for municipalities and municipality codes
     deso_regso_versions = "latest",          # if there are several DeSO/RegSO versions, "latest" uses the most recent version that has a value, "sum" sums all versions, NULL does nothing
-    split_deso_regso_by_municipality = TRUE, # adds the columns kommun_kod and kommun and keeps only the RegSO/DeSO name in the region column
+    split_deso_regso_by_municipality = TRUE, # adds the columns kommun_code and kommun and keeps only the RegSO/DeSO name in the region column
     include_aggregations = "none",           # controls aggregations in valid_values_list (see pxweb2_get_values): "none"/FALSE = none, "all"/TRUE = all, "auto" = auto, "codelists" = metadata only, or a named vector c(Region = "agg_RegionLA2018")
     auto_limit = 30L,                        # max total number of code-list calls when include_aggregations = "auto"
-    code_variables = NULL,                   # variables that also get a code column "<label>_kod": labels, codes or positions; NULL = labels only, "*" = all
+    code_variables = NULL,                   # variables that also get a code column "<label>_code": labels, codes or positions; NULL = labels only, "*" = all
     quiet = FALSE                            # TRUE suppresses informational messages (include_aggregations/"auto", latest-period substitution, "invalid values removed") - never suppresses errors or genuine warnings
 ){
   if (is.null(table)) stop("table_id must be supplied")
@@ -340,7 +340,7 @@ pxr_pxweb2_get_data <- function(
     dplyr::transmute(
       code_col = code,
       txt_col = label,
-      new_name = paste0(label, "_kod"),
+      new_name = paste0(label, "_code"),
       keep = code %in% keep_code_vars,
       # bara där namnet är "kod namn", inte "20 år" (kod 20), där talet är en del av namnet
       strip = .pxweb2_label_has_code(code, label, role, show)
@@ -410,12 +410,12 @@ pxr_pxweb2_get_data <- function(
 
     # the data comes in `lang`, but variables_df is built from metadata that
     # may be in another language: name the code columns after the labels in
-    # the response, e.g. "sex_kod" instead of "kön_kod" when lang = "en"
+    # the response, e.g. "sex_code" instead of "kön_code" when lang = "en"
     if (nrow(cols_to_add) > 0 && !is.null(parsed$dim_labels)) {
       resp_lab <- unname(parsed$dim_labels[cols_to_add$code_col])
       ok <- !is.na(resp_lab)
       cols_to_add$txt_col[ok] <<- resp_lab[ok]
-      cols_to_add$new_name[ok] <<- paste0(resp_lab[ok], "_kod")
+      cols_to_add$new_name[ok] <<- paste0(resp_lab[ok], "_code")
     }
 
     # if there are columns we should also fetch codes for, they are added here
@@ -472,10 +472,10 @@ pxr_pxweb2_get_data <- function(
       base_url = base_url
     )
 
-    if (is_v1 && all(c("kommun", "kommun_kod") %in% names(result_table)) &&
-        any(is.na(result_table$kommun) & !is.na(result_table$kommun_kod))) {
+    if (is_v1 && all(c("kommun", "kommun_code") %in% names(result_table)) &&
+        any(is.na(result_table$kommun) & !is.na(result_table$kommun_code))) {
       warning("PxWeb API v1 has no code lists, so the names of the municipalities are ",
-              "missing in the column kommun. The column kommun_kod is complete.", call. = FALSE)
+              "missing in the column kommun. The column kommun_code is complete.", call. = FALSE)
     }
   }
 
@@ -576,7 +576,7 @@ pxweb2_table_needs_update <- function(
 # the region column to just the RegSO/DeSO name (the DeSO name equals its code)
 .pxweb2_split_deso_regso_municipality <- function(df,
                                                     region_col = "region",
-                                                    region_code_col = "region_kod") {
+                                                    region_code_col = "region_code") {
   
   if (!all(c(region_col, region_code_col) %in% names(df))) {
     return(df)
@@ -631,7 +631,7 @@ pxweb2_table_needs_update <- function(
       
       .har_parentes = stringr::str_detect(.region_text_ren, "\\([^()]+\\)"),
       
-      kommun_kod = dplyr::if_else(
+      kommun_code = dplyr::if_else(
         .ar_deso_regso & stringr::str_detect(.grund_region_kod, "^\\d{4}"),
         stringr::str_sub(.grund_region_kod, 1, 4),
         NA_character_
@@ -670,7 +670,7 @@ pxweb2_table_needs_update <- function(
       -.har_parentes
     ) |>
     dplyr::relocate(
-      dplyr::any_of(c("kommun_kod", "kommun")),
+      dplyr::any_of(c("kommun_code", "kommun")),
       .after = dplyr::all_of(region_code_col)
     )
 }
@@ -679,7 +679,7 @@ pxweb2_table_needs_update <- function(
 .pxweb2_handle_deso_regso_versions <- function(df,
                                                        mode = c("latest", "sum"),
                                                        region_col = "region",
-                                                       region_code_col = "region_kod",
+                                                       region_code_col = "region_code",
                                                        value_col = "value") {
   
   if (is.null(mode)) return(df)
@@ -748,7 +748,7 @@ pxweb2_table_needs_update <- function(
       region_code_col,
       region_col,
       value_col,
-      "kommun_kod",
+      "kommun_code",
       "kommun",
       ".row_id",
       ".region_kod_tmp",
@@ -906,8 +906,8 @@ pxweb2_table_needs_update <- function(
 
 .pxweb2_fill_deso_municipality_from_metadata <- function(df,
                                                          metadata,
-                                                         region_code_col = "region_kod",
-                                                         municipality_code_col = "kommun_kod",
+                                                         region_code_col = "region_code",
+                                                         municipality_code_col = "kommun_code",
                                                          municipality_col = "kommun",
                                                          base_url = NULL) {
   
@@ -1514,7 +1514,7 @@ pxweb2_table_needs_update <- function(
 
 
 # helper: harmonise result names
-# renames result columns after fetching, e.g. Kommun -> Region and kommun_kod -> region_kod
+# renames result columns after fetching, e.g. Kommun -> Region and kommun_code -> region_code
 .pxweb2_harmonise_result_names <- function(
     df,
     harmonise_variable_names = NULL
@@ -1548,9 +1548,9 @@ pxweb2_table_needs_update <- function(
       names(df)[alt_pos] <- standard_name_lc
     }
 
-    # code column, e.g. kommun_kod -> region_kod
-    alt_code <- paste0(alt_name_lc, "_kod")
-    standard_code <- paste0(standard_name_lc, "_kod")
+    # code column, e.g. kommun_code -> region_code
+    alt_code <- paste0(alt_name_lc, "_code")
+    standard_code <- paste0(standard_name_lc, "_code")
 
     names_lc <- stringr::str_to_lower(names(df))
     

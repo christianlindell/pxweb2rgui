@@ -49,8 +49,11 @@ library(pxweb2rgui)
    inte i tabellistan. Gränssnittet säger detta när webbplatsen väljs. När en
    eller flera tabeller är valda går knappen "Kommentarer" att klicka på; den
    hämtar tabellernas kommentarer och öppnar fliken "4. Kommentarer".
-2. **Välj variabler.** Varje variabel har en lista där ett klick markerar ett
-   värde. Obligatoriska variabler är markerade. För tiden kan du kryssa i
+2. **Välj variabler.** Varje variabel har en lista som fungerar som hos SCB. Ett
+   klick väljer ett värde och avmarkerar de andra, Ctrl+klick (Cmd på Mac) lägger
+   till ett värde eller tar bort det, och Shift+klick väljer ett intervall från det
+   senast klickade värdet och avmarkerar övriga. Ctrl+Shift+klick lägger intervallet
+   till urvalet. Obligatoriska variabler är markerade. För tiden kan du kryssa i
    "Hämta alltid senaste perioden", som blir `"9999"` i koden. Erbjuder
    tabellen andra indelningar, t.ex. län, kommuner eller A-regioner, väljs de
    under "Välj indelning". Med flera tabeller slås variabler med samma kod ihop
@@ -78,7 +81,7 @@ library(pxweb2rgui)
    alla variabler utom värdevariablerna; med en vald indelning listas värdena i
    stället. Över 1 miljon celler visar appen en varning, men hämtningen stoppas
    inte. Kryssa i de variabler som också ska få
-   en kodkolumn (`<variabel>_kod`); i koden anges de med variablernas koder,
+   en kodkolumn (`<variabel>_code`); i koden anges de med variablernas koder,
    som är ASCII och lika på alla språk. Kryssa i "R-kompatibla kolumnnamn" för
    att få kolumnnamn som `region`, `kon` och `folkmangd`: koden får då en rad
    med `janitor::clean_names()`, och data i appen och nedladdningen får samma

@@ -735,7 +735,7 @@ px_app_server <- function(addin = FALSE) {
       if (length(q$problems) == 0 && q$cells == 0) {
         q$problems <- "Ingen av tabellerna kan hämtas med de här valen."
       }
-      # variabler som ska få en kodkolumn <variabel>_kod; standard är bara
+      # variabler som ska få en kodkolumn <variabel>_code; standard är bara
       # klartext. Variabler som elimineras finns inte i uttaget. Valen är
       # variablernas koder (t.ex. "Kon"), som är ASCII och lika på alla språk;
       # namnen (t.ex. "kön") visas bara i rutorna.
@@ -780,7 +780,7 @@ px_app_server <- function(addin = FALSE) {
           id,
           label = tagList("Variabler som även ska få koder",
                           tags$small(class = "text-muted fw-normal",
-                                     " (kolumnen får namnet variabel_kod, övriga visas i klartext)")),
+                                     " (kolumnen får namnet variabel_code, övriga visas i klartext)")),
           choices = med, selected = intersect(isolate(input[[id]]), med), inline = TRUE
         )
       )

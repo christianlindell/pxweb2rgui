@@ -78,8 +78,8 @@ test_that("code_variables translates labels, codes and positions", {
 test_that("code_variables given as codes give the same columns", {
   skip_if_not_installed("rjstat")
   df <- .cv_get_data(code_variables = c("Region", "Kon"))
-  expect_named(df, c("region_kod", "region", "kön_kod", "kön", "tabellinnehåll", "år", "value"))
-  expect_identical(df$kön_kod[df$kön == "kvinnor"][1], "2")
+  expect_named(df, c("region_code", "region", "kön_code", "kön", "tabellinnehåll", "år", "value"))
+  expect_identical(df$kön_code[df$kön == "kvinnor"][1], "2")
 })
 
 test_that("harmonised names can be used in code_variables", {
@@ -96,16 +96,16 @@ test_that("pxr_pxweb2_get_data returns only labels by default", {
   expect_setequal(unique(df$region), c("Riket", "Stockholms län"))
 })
 
-test_that("pxr_pxweb2_get_data adds <variable>_kod for the chosen variables", {
+test_that("pxr_pxweb2_get_data adds <variable>_code for the chosen variables", {
   skip_if_not_installed("rjstat")
   df <- .cv_get_data(code_variables = c("region", "kön"))
-  expect_named(df, c("region_kod", "region", "kön_kod", "kön", "tabellinnehåll", "år", "value"))
-  expect_identical(df$kön_kod[df$kön == "kvinnor"][1], "2")
-  expect_identical(df$region_kod[df$region == "Riket"][1], "00")
+  expect_named(df, c("region_code", "region", "kön_code", "kön", "tabellinnehåll", "år", "value"))
+  expect_identical(df$kön_code[df$kön == "kvinnor"][1], "2")
+  expect_identical(df$region_code[df$region == "Riket"][1], "00")
 
   df_pos <- .cv_get_data(code_variables = c(3, 4))
-  expect_named(df_pos, c("region", "kön", "tabellinnehåll_kod", "tabellinnehåll", "år_kod", "år", "value"))
-  expect_identical(unique(df_pos$tabellinnehåll_kod), "BE0101N1")
+  expect_named(df_pos, c("region", "kön", "tabellinnehåll_code", "tabellinnehåll", "år_code", "år", "value"))
+  expect_identical(unique(df_pos$tabellinnehåll_code), "BE0101N1")
 })
 
 test_that("the json-stat2 response is parsed once into labels and codes", {
@@ -154,10 +154,10 @@ test_that("code columns are named after the response's labels when lang differs"
   )
   df <- pxr_pxweb2_get_data("TAB0000", query = list(Region = "*", Kon = "*", ContentsCode = "*", Tid = "*"),
                         lang = "en", code_variables = "kön", quiet = TRUE)
-  expect_named(df, c("region", "sex_kod", "sex", "tabellinnehåll", "år", "value"))
+  expect_named(df, c("region", "sex_code", "sex", "tabellinnehåll", "år", "value"))
   df2 <- pxr_pxweb2_get_data("TAB0000", query = list(Region = "*", Kon = "*", ContentsCode = "*", Tid = "*"),
                          lang = "en", code_variables = "Kon", quiet = TRUE)
-  expect_named(df2, c("region", "sex_kod", "sex", "tabellinnehåll", "år", "value"))
+  expect_named(df2, c("region", "sex_code", "sex", "tabellinnehåll", "år", "value"))
 })
 
 test_that("'**', agg_ and from()/to()/range() survive the value check", {
@@ -190,9 +190,9 @@ test_that("'**', agg_ and from()/to()/range() survive the value check", {
 
 test_that("DeSO and RegSO rows get a municipality name, with the general code list as fallback", {
   df <- tibble::tibble(
-    region_kod = c("0114A0010", "0114R001", "2080R002"),
+    region_code = c("0114A0010", "0114R001", "2080R002"),
     region = c("0114A0010", "Upplands Väsby centrala", "Falun norra"),
-    kommun_kod = c("0114", "0114", "2080"),
+    kommun_code = c("0114", "0114", "2080"),
     kommun = NA_character_
   )
   local_mocked_bindings(

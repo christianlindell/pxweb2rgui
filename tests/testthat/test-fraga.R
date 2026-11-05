@@ -62,6 +62,12 @@ test_that("förval följer SCB: första innehållet och senaste perioden", {
   expect_length(px_default_selection("geo", c("00", "01")), 0)
 })
 
+test_that("listans klick känner av Ctrl, Cmd och Shift och har ett ankare", {
+  # själva beteendet går bara att pröva i en webbläsare
+  js <- pxweb2rgui:::px_var_js
+  for (s in c("e.ctrlKey", "e.metaKey", "e.shiftKey", "pxAnkare")) expect_true(grepl(s, js, fixed = TRUE))
+})
+
 test_that("variabelrutan visar obligatoriskt, förval och tid i fallande ordning", {
   html <- as.character(px_var_box("v1", "år", data.frame(code = c("2023", "2024"),
                                   label = c("2023", "2024")), "time", FALSE))

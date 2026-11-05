@@ -157,7 +157,7 @@ test_that("data is fetched with POST, and aggregations give a warning", {
   expect_match(seen$body, '{"code":"OMRÅDE","values":["101"]}', fixed = TRUE)
   expect_false(grepl("KØN", seen$body, fixed = TRUE))
   expect_identical(d$value, c(670389, 671000))
-  expect_identical(d$`område_kod`, c("101", "101"))
+  expect_identical(d$`område_code`, c("101", "101"))
   expect_warning(pxr_pxweb2_get_data("FOLK1A", query = q, base_url = "dst", include_aggregations = "all", quiet = TRUE),
                  "Statistics Denmark's API has no code lists")
   expect_error(pxweb2_get_codelist("x", base_url = "dst"), "no code lists")

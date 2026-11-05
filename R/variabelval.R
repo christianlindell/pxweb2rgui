@@ -1,6 +1,7 @@
 # Variabelrutor i samma stil som SCB:s webbplats: rubrik med "(Obligatoriskt)",
 # Markera alla / Avmarkera alla, "Valda x Totalt y", sökfält för långa
-# listor och en lista där ett klick markerar eller avmarkerar ett värde.
+# listor och en lista med samma klick som SCB:s <select multiple>: klick väljer
+# ett värde, Ctrl+klick lägger till eller tar bort, Shift+klick väljer ett intervall.
 # Listan är en egen komponent (div-element med en Shiny-inputbindning) i
 # stället för en <select multiple>: webbläsarens listruta hoppar till toppen
 # vid klick i vissa fönster, t.ex. RStudios Viewer. Beteendet finns i
@@ -199,10 +200,14 @@ $(document).on('change', '.px-common-only', function() {
   pxCommonTotal(list);
   list.trigger('change');
 });
-// Klick markerar/avmarkerar ett värde. Håller man ner musknappen och drar
-// får alla värden mellan första och aktuella raden samma läge som den första
-// raden fick (markera eller avmarkera). Drar man förbi listans kant scrollar
-// den. Listan flyttar sig aldrig av sig själv.
+// Samma klick som i SCB:s lista (<select multiple>):
+//   klick             väljer värdet och avmarkerar övriga
+//   Ctrl+klick        lägger till eller tar bort värdet (Cmd på Mac)
+//   Shift+klick       väljer intervallet från ankaret, övriga avmarkeras
+//   Ctrl+Shift+klick  lägger intervallet till urvalet
+// Ankaret är den rad som senast klickades utan Shift. Håller man ner musknappen
+// och drar utökas intervallet, med samma läge som det första klicket gav. Drar man
+// förbi listans kant scrollar den. Listan flyttar sig aldrig av sig själv.
 var pxDrag = null;
 function pxDragApply(opt) {
   var i = pxDrag.opts.index(opt);
@@ -233,9 +238,17 @@ $(document).on('mousedown', '.px-list .px-opt', function(e) {
   var opts = list.find('.px-opt').filter(function() {
     return this.style.display !== 'none' && !pxCommonHidden(this);
   });
+  var ctrl = e.ctrlKey || e.metaKey;
+  // ett ankare som har ersatts eller som ett sökord döljer räknas inte
+  var ankare = list.data('pxAnkare');
+  var start = (e.shiftKey && ankare) ? opts.index(ankare) : -1;
+  if (start < 0) { start = opts.index(this); list.data('pxAnkare', this); }
+  var mark = (ctrl && !e.shiftKey) ? !$(this).hasClass('sel') : true;
+  // även värden som ett sökord döljer avmarkeras, som 'Valda' visar
+  if (!ctrl) list.find('.px-opt').each(function() { pxToggle(this, false); });
   pxDrag = {
-    list: list, opts: opts, start: opts.index(this), last: -1,
-    mark: !$(this).hasClass('sel'), y: e.clientY, timer: null,
+    list: list, opts: opts, start: start, last: -1,
+    mark: mark, y: e.clientY, timer: null,
     before: opts.map(function() { return $(this).hasClass('sel'); }).get()
   };
   pxDragApply(this);
@@ -263,7 +276,7 @@ $(document).on('keydown', '.px-list .px-opt', function(e) {
   if (e.key === ' ' || e.key === 'Enter') {
     e.preventDefault();
     pxToggle(this);
-    $(this).closest('.px-list').trigger('change');
+    $(this).closest('.px-list').data('pxAnkare', this).trigger('change');
   }
 });
 // Shiny skickar NULL både före första valet och när allt avmarkerats;

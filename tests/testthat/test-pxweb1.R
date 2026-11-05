@@ -327,7 +327,7 @@ test_that("data is fetched with POST to the table, and parsed in spite of a BOM"
   expect_null(seen$query)
   expect_match(seen$body, '{"code":"Region","selection":{"filter":"item","values":["01"]}}', fixed = TRUE)
   expect_match(seen$body, '{"code":"Tid","selection":{"filter":"item","values":["2024"]}}', fixed = TRUE)
-  expect_identical(d$region_kod, "01")
+  expect_identical(d$region_code, "01")
   expect_identical(d$value, 7)
 })
 
@@ -559,7 +559,7 @@ test_that("an eliminated variable is not counted and needs no code column", {
   )
   d <- pxr_pxweb2_get_data("T1.px", query = list(Region = NA, ContentsCode = "*", Tid = "2024"),
                            base_url = v1_url, code_variables = "*", quiet = TRUE)
-  expect_named(d, c("tabellinnehåll_kod", "tabellinnehåll", "år_kod", "år", "value"))
+  expect_named(d, c("tabellinnehåll_code", "tabellinnehåll", "år_code", "år", "value"))
 })
 
 test_that("a time variable that the site does not mark is found by its name", {
@@ -607,8 +607,8 @@ test_that("a code column leaves numbers in other labels than regions alone", {
                            code_variables = c("Region", "Alder"), quiet = TRUE,
                            split_deso_regso_by_municipality = FALSE)
   expect_identical(d[["ålder"]], "20 år")
-  expect_identical(d[["ålder_kod"]], "20")
+  expect_identical(d[["ålder_code"]], "20")
   expect_identical(d[["region"]], "Upplands Väsby")
   expect_identical(d[["grupp"]], "Sju")
-  expect_false("grupp_kod" %in% names(d))
+  expect_false("grupp_code" %in% names(d))
 })
