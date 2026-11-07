@@ -237,6 +237,12 @@ avmarkerar de andra, Ctrl+klick (Cmd på Mac) lägger till ett värde eller tar 
 och Shift+klick väljer ett intervall från det senast klickade värdet och avmarkerar
 övriga. Ctrl+Shift+klick lägger intervallet till urvalet.
 
+Trädet i flik 1 visar när varje tabell senast uppdaterades, till exempel `[2026-04-16]`.
+Du kan också visa bara tabeller som uppdaterats sedan ett visst datum. Klicka i fältet
+"Bara tabeller uppdaterade sedan", så öppnas en kalender. Klicka på rubriken med månaden
+för att välja månad och en gång till för att välja år. Trädet visar sedan bara tabeller
+som uppdaterats det datumet eller senare, utfällt. "Rensa" visar alla tabeller igen.
+
 Knappen "Kommentarer" i flik 1 är gråtonad tills en eller flera tabeller är valda. Ett
 klick hämtar samma kommentarer som `pxr_get_comments()` och öppnar fliken "4. Kommentarer",
 som är gråtonad så länge den saknar innehåll. Varje tabell får en egen ruta med tabell-id
@@ -291,6 +297,19 @@ och gränssnittet används.
 `pxweb2rgui:::`.
 
 ## Versionshistorik
+
+### 0.23.0 (2026-11-07)
+
+#### Nytt
+
+* Gränssnittet: i flik 1 kan du visa bara tabeller som uppdaterats sedan ett visst
+  datum. Fältet "Bara tabeller uppdaterade sedan" öppnar en kalender där du väljer år,
+  månad och dag. Filtret fungerar tillsammans med sökningen och "Visa även avslutade
+  tabeller", och "Rensa" visar alla tabeller igen. Tabeller utan uppdateringsdatum döljs
+  när ett datum är valt.
+* Gränssnittet: trädet i flik 1 visar när varje tabell senast uppdaterades, till exempel
+  `[2026-04-16]` efter perioden, som i SCB:s statistikdatabas. Det gäller både API v1
+  och v2.
 
 ### 0.22.0 (2026-11-05)
 

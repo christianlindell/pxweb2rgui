@@ -41,7 +41,11 @@ library(pxweb2rgui)
    Riksskogstaxeringen) och språk. En ruta visar namnet att ange
    som `provider` i funktionerna som börjar med `pxr_`. Bläddra i ämnesträdet eller
    sök på tabellnamn eller tabell-id och klicka på en tabell. Ctrl+klick väljer
-   flera tabeller, även mellan sökningar. En leverantör som
+   flera tabeller, även mellan sökningar. Efter varje tabell står datumet då den senast
+   uppdaterades, till exempel `[2026-04-16]`. Fältet "Bara tabeller uppdaterade sedan"
+   öppnar en kalender där du väljer år, månad och dag. Då visas bara tabeller som
+   uppdaterats det datumet eller senare, och knappen "Rensa" visar alla tabeller
+   igen. En leverantör som
    har båda versionerna används alltid med API v2. Hos Danmarks Statistik, som
    har ett eget API, finns inte "Välj indelning". Med API v1 kan
    tabellistan ta några minuter att hämta första gången, och "Välj indelning"

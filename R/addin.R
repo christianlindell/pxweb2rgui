@@ -6,7 +6,8 @@
 #' `pxr_pxweb2_get_data()`-kod med `lang` och `base_url`. Data
 #' kan också hämtas direkt och laddas ner som txt, Excel eller parquet. Knappen
 #' "Kommentarer" i flik 1 ger fliken "4. Kommentarer" med kommentarerna till de valda
-#' tabellerna.
+#' tabellerna. I flik 1 kan tabellistan också begränsas till tabeller som uppdaterats
+#' sedan ett datum som väljs i en kalender.
 #'
 #' En leverantör som har båda versionerna används alltid med API v2. Danmarks
 #' Statistik (`"dst"`) har ett eget API, där "Välj indelning" saknas. Med API v1

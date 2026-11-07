@@ -109,6 +109,8 @@ px_tree_css <- "
 .px-selected { background: var(--bs-warning-bg-subtle); border-radius: 3px; }
 .px-discontinued .px-table-label { color: var(--bs-secondary-color); }
 .px-period { margin-left: 0.4rem; font-size: 0.8em; color: var(--bs-secondary-color); }
+.px-updated { margin-left: 0.4rem; font-size: 0.8em; font-style: italic;
+              color: var(--bs-secondary-color); }
 .px-badge { margin-left: 0.4rem; font-size: 0.75em; color: var(--bs-danger); }
 .px-var-card .card-header { font-weight: 600; }
 #kod { font-size: 0.85rem; user-select: all; }
@@ -148,6 +150,19 @@ px_app_ui <- function(addin = FALSE) {
           textInput("sok", "Sök i tabellnamn eller tabell-id",
                     placeholder = "t.ex. folkmängd kommun"),
           checkboxInput("avslutade", "Visa även avslutade tabeller", FALSE),
+          # tomt fält = alla tabeller; kalendern väljer år, månad och dag
+          div(
+            class = "d-flex gap-2 align-items-end",
+            # value = NA ger ett tomt fält; Shiny varnar då i onödan
+            suppressWarnings(
+              dateInput("uppdaterad_sedan", "Bara tabeller uppdaterade sedan",
+                        value = NA, max = Sys.Date(), format = "yyyy-mm-dd",
+                        language = "sv", weekstart = 1, autoclose = TRUE,
+                        width = "100%")
+            ),
+            actionButton("rensa_datum", "Rensa", class = "btn-sm mb-3",
+                         title = "Visa tabeller oavsett uppdateringsdatum")
+          ),
           div(
             class = "d-flex gap-2",
             actionButton("expandera_alla", "Expandera alla", class = "btn-sm"),
@@ -380,8 +395,17 @@ px_app_server <- function(addin = FALSE) {
 
     filtrerade <- reactive({
       req(katalog())
-      px_filter_tables(katalog()$tables, sok(), isTRUE(input$avslutade))
+      px_filter_tables(katalog()$tables, sok(), isTRUE(input$avslutade),
+                       updated_since = uppdaterad_sedan())
     })
+
+    # NULL när fältet är tomt eller datumet ogiltigt
+    uppdaterad_sedan <- reactive({
+      d <- input$uppdaterad_sedan
+      if (length(d) == 1 && !is.na(d)) as.Date(d) else NULL
+    })
+    observeEvent(input$rensa_datum,
+                 suppressWarnings(updateDateInput(session, "uppdaterad_sedan", value = NA)))
 
     trad <- reactive({
       req(katalog())
@@ -395,9 +419,14 @@ px_app_server <- function(addin = FALSE) {
       }
       if (is.null(katalog())) return(p("Hämtar tabellistan…"))
       t <- trad()
-      if (t$n == 0) return(p("Inga tabeller matchar sökningen."))
-      # vid sökning fälls hela det (filtrerade) trädet ut
-      px_tree_html(t, katalog()$tables, open = nzchar(trimws(sok() %||% "")),
+      if (t$n == 0) {
+        return(p(if (is.null(uppdaterad_sedan())) "Inga tabeller matchar sökningen."
+                 else paste("Inga tabeller matchar sökningen och är uppdaterade sedan",
+                            format(uppdaterad_sedan()), "eller senare.")))
+      }
+      # vid sökning eller datumfilter fälls hela det (filtrerade) trädet ut
+      px_tree_html(t, katalog()$tables,
+                   open = nzchar(trimws(sok() %||% "")) || !is.null(uppdaterad_sedan()),
                    selected = isolate(valda()))
     })
 

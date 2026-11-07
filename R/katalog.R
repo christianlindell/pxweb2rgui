@@ -156,10 +156,19 @@ px_paths_rows <- function(table_id, paths) {
 }
 
 # Filtrerar tabellerna på fritext (alla ord måste finnas i id eller namn)
-# och på om avslutade tabeller ska visas.
-px_filter_tables <- function(tables, text = "", include_discontinued = FALSE) {
+# och på om avslutade tabeller ska visas. Med updated_since (ett datum) visas
+# bara tabeller uppdaterade det datumet eller senare; tabeller utan datum döljs då.
+px_filter_tables <- function(tables, text = "", include_discontinued = FALSE,
+                             updated_since = NULL) {
   keep <- rep(TRUE, nrow(tables))
   if (!include_discontinued) keep <- keep & !tables$discontinued
+  since <- if (length(updated_since) == 1) {
+    suppressWarnings(as.Date(updated_since, optional = TRUE))
+  }
+  if (length(since) == 1 && !is.na(since)) {
+    upd <- as.Date(substr(tables$updated, 1, 10), optional = TRUE)
+    keep <- keep & !is.na(upd) & upd >= since
+  }
   words <- strsplit(tolower(trimws(text %||% "")), "\\s+")[[1]]
   words <- words[nzchar(words)]
   if (length(words) > 0) {
@@ -245,6 +254,10 @@ px_tree_html <- function(tree, tables, open = FALSE, selected = NULL) {
         shiny::tags$span(class = "px-table-label", r$label)
       ),
       if (nzchar(period)) shiny::tags$span(class = "px-period", period),
+      # senast uppdaterad, som i SCB:s statistikdatabas
+      if (length(r[["updated"]]) == 1 && !is.na(r[["updated"]]) && nzchar(r[["updated"]])) {
+        shiny::tags$span(class = "px-updated", paste0("[", r[["updated"]], "]"))
+      },
       if (isTRUE(r$discontinued)) shiny::tags$span(class = "px-badge", "avslutad")
     )
   }

@@ -1,3 +1,16 @@
+# pxweb2rgui 0.23.0
+
+## Nytt
+
+* Gränssnittet: i flik 1 kan du visa bara tabeller som uppdaterats sedan ett visst
+  datum. Fältet "Bara tabeller uppdaterade sedan" öppnar en kalender där du väljer år,
+  månad och dag. Filtret fungerar tillsammans med sökningen och "Visa även avslutade
+  tabeller", och "Rensa" visar alla tabeller igen. Tabeller utan uppdateringsdatum döljs
+  när ett datum är valt.
+* Gränssnittet: trädet i flik 1 visar när varje tabell senast uppdaterades, till exempel
+  `[2026-04-16]` efter perioden, som i SCB:s statistikdatabas. Det gäller både API v1
+  och v2.
+
 # pxweb2rgui 0.22.0
 
 ## Ändrat

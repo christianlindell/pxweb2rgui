@@ -35,6 +35,37 @@ test_that("avslutade tabeller och fritextsökning filtrerar", {
   expect_equal(px_filter_tables(k$tables, "tab6104")$id, "TAB6104")
 })
 
+test_that("datumfiltret visar bara tabeller uppdaterade sedan datumet", {
+  k <- px_parse_catalogue(mock_backend()$search_tables())
+  tabs <- k$tables
+  tabs$updated <- NA_character_
+  tabs$updated[tabs$id == "TAB6104"] <- "2026-11-01"
+  tabs$updated[tabs$id == "TAB5444"] <- "2026-10-15"
+  tabs$updated[tabs$id == "TAB638"] <- "2026-09-30"
+  alla <- nrow(px_filter_tables(tabs))
+  expect_equal(px_filter_tables(tabs, updated_since = as.Date("2026-10-15"))$id,
+               c("TAB6104", "TAB5444"))
+  expect_equal(px_filter_tables(tabs, updated_since = "2026-11-01")$id, "TAB6104")
+  # tomt eller ogiltigt datum filtrerar inte
+  expect_equal(nrow(px_filter_tables(tabs, updated_since = NULL)), alla)
+  expect_equal(nrow(px_filter_tables(tabs, updated_since = as.Date(NA))), alla)
+  # kombineras med fritext
+  expect_equal(nrow(px_filter_tables(tabs, "anställningar",
+                                     updated_since = as.Date("2026-10-15"))), 0)
+})
+
+test_that("trädet visar när tabellerna senast uppdaterades", {
+  k <- px_parse_catalogue(mock_backend()$search_tables())
+  tabs <- k$tables
+  tabs$updated <- NA_character_
+  tabs$updated[tabs$id == "TAB6104"] <- "2026-04-16"
+  html <- as.character(px_tree_html(px_build_tree(k$paths), tabs, open = TRUE))
+  expect_match(html, '<span class="px-updated">[2026-04-16]</span>',
+               fixed = TRUE)
+  # tabeller utan datum får ingen tom ruta
+  expect_equal(lengths(regmatches(html, gregexpr("px-updated", html))), 2)  # två sökvägar
+})
+
 test_that("trädet blir HTML med klickbara tabeller", {
   k <- px_parse_catalogue(mock_backend()$search_tables())
   html <- as.character(px_tree_html(px_build_tree(k$paths), k$tables, open = TRUE))
