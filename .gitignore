@@ -4,6 +4,7 @@
 .RDataTmp
 .Ruserdata
 .Rproj.user/
+.claude/
 
 # Local credentials and environment settings
 .Renviron
