@@ -266,8 +266,12 @@ Därför gäller i gränssnittet:
 * Samma kod och samma namn i flera tabeller blir en rad.
 * Olika koder med samma namn, till exempel "Folkmängd" i TAB638 och TAB5557, blir en
   rad om varje tabell har högst en kod med namnet. Varje tabell hämtas med sin kod.
-* Har samma kod olika namn i olika tabeller, som månaderna hos Jordbruksverket, väljs
-  värdena på namn, och koden får namnen i `query`. Regioner slås aldrig ihop på namn.
+* Har samma kod bara olika formulering, som näringsgrenen SNI2007 i TAB1786
+  ("företag inom jordbruk, skogsbruk och fiske") och TAB5837 ("jordbruk, skogsbruk och
+  fiske"), båda med koden `A`, blir det en rad, och koden står i `query`.
+* Är koderna löpnummer, så att samma kod har olika namn och samma namn olika koder i
+  tabellerna, som månaderna hos Jordbruksverket, väljs värdena på namn, och koden får
+  namnen i `query`. Regioner slås aldrig ihop på namn.
 
 `"9999"` är varje tabells egen senaste period, och gäller bara tabellens tidsvariabel.
 
@@ -296,6 +300,17 @@ och gränssnittet används.
 `pxweb2rgui:::`.
 
 ## Versionshistorik
+
+### 0.23.1 (2026-11-10)
+
+#### Rättat
+
+* Gränssnittet: med flera tabeller valdes värden på namn så fort samma kod hade olika
+  formulering i tabellerna, till exempel näringsgrenen SNI2007 i SCB:s TAB1786 och
+  TAB5837. Listan fick då två rader per kod, och den tabell som saknade det valda namnet
+  hämtades utan variabeln, alltså för alla näringsgrenar. Nu blir det en rad per kod, och
+  koden står i den kod som skapas (`SNI2007 = "A"`). Värden väljs på namn bara när
+  koderna är löpnummer, så att samma namn har olika koder i tabellerna.
 
 ### 0.23.0 (2026-11-07)
 

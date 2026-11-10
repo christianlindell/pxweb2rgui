@@ -102,9 +102,13 @@ px_disambiguate_labels <- function(vals) {
 # * Olika koder med samma namn blir en rad bara om varje tabell har högst en kod med
 #   namnet, så att ingen tabell får samma tal två gånger (`alias` ger koderna). Annars
 #   blir de egna rader, med koden i namnet.
-# * Har samma kod olika namn i olika tabeller väljs värdena på namn: raden och frågan
-#   innehåller namnet, och varje tabell översätter det till sin egen kod. Då går bara
-#   en kod per namn och tabell att välja, och `dropped` räknar övriga.
+# * Har samma kod olika namn, och har dessutom samma namn olika koder i olika tabeller,
+#   är koderna löpnummer: värdena väljs på namn. Raden och frågan innehåller namnet, och
+#   varje tabell översätter det till sin egen kod. Då går bara en kod per namn och
+#   tabell att välja, och `dropped` räknar övriga.
+# * Har samma kod bara olika formulering (SCB:s SNI2007 är "jordbruk, skogsbruk och
+#   fiske" i TAB5837 och "företag inom jordbruk, skogsbruk och fiske" i TAB1786, båda
+#   med koden A) gäller koden, och raden får namnet från den första tabellen.
 # * Regioner slås inte ihop på namn, eftersom två orter kan heta likadant, och koden
 #   gäller om bara enstaka namn skiljer sig (t.ex. stavning).
 # Returnerar list(values, alias, to_row = tabellens kod -> radens värde, dropped).
@@ -124,8 +128,13 @@ px_merge_values <- function(per_table, role) {
   by_name <- if (is_geo) {
     length(delade) > 0 && skiljer / length(delade) >= 0.5
   } else {
+    # har något namn olika koder i olika tabeller? Bara då betyder koderna olika saker.
+    per_key_tab <- unique(all_vals[, c("key", "table", "code")])
+    byter_kod <- any(vapply(split(per_key_tab, per_key_tab$key), function(x) {
+      length(unique(x$table)) > 1 && length(unique(x$code)) > 1
+    }, TRUE))
     kandidater <- which(all_vals$key != all_vals$code & all_vals$key %in% all_vals$code)
-    skiljer > 0 || any(vapply(kandidater, function(i) {
+    (skiljer > 0 && byter_kod) || any(vapply(kandidater, function(i) {
       any(all_vals$code == all_vals$key[i] & all_vals$table != all_vals$table[i])
     }, TRUE))
   }
@@ -150,8 +159,8 @@ px_merge_values <- function(per_table, role) {
       for (i in seq_len(nrow(x))) to_row[[x$table[i]]][[x$code[i]]] <- value
     }
   } else {
-    # en region följer koden, även om stavningen skiljer sig
-    if (is_geo) all_vals$key <- all_vals$key[match(all_vals$code, all_vals$code)]
+    # ett värde följer koden, även om namnet är formulerat olika i tabellerna
+    all_vals$key <- all_vals$key[match(all_vals$code, all_vals$code)]
     per_key <- split(all_vals, factor(all_vals$key, levels = unique(all_vals$key)))
     for (x in per_key) {
       koder <- unique(x$code)

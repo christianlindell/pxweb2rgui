@@ -78,8 +78,9 @@ library(pxweb2rgui)
    Indelningar med samma namn blir ett val, och en indelning som bara vissa
    tabeller har visas med "(bara ...)". Olika koder med samma namn i olika tabeller
    blir en rad om varje tabell har högst en sådan kod; annars får namnet koden efter
-   sig, och så är det också med en enda tabell. Har samma kod olika namn i olika
-   tabeller väljs värdena på namn.
+   sig, och så är det också med en enda tabell. Har samma kod bara olika formulering i
+   olika tabeller gäller koden. Bara när koderna är löpnummer, så att samma namn också
+   har olika koder i tabellerna, väljs värdena på namn.
 3. **Kod och data.** Här står koden, med `lang` och `base_url`, så att den ger
    samma resultat oavsett inställningar. Knappen "Välj alla värden" ger `"*"` på
    alla variabler utom värdevariablerna; med en vald indelning listas värdena i

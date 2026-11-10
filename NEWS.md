@@ -1,3 +1,14 @@
+# pxweb2rgui 0.23.1
+
+## Rättat
+
+* Gränssnittet: med flera tabeller valdes värden på namn så fort samma kod hade olika
+  formulering i tabellerna, till exempel näringsgrenen SNI2007 i SCB:s TAB1786 och
+  TAB5837. Listan fick då två rader per kod, och den tabell som saknade det valda namnet
+  hämtades utan variabeln, alltså för alla näringsgrenar. Nu blir det en rad per kod, och
+  koden står i den kod som skapas (`SNI2007 = "A"`). Värden väljs på namn bara när
+  koderna är löpnummer, så att samma namn har olika koder i tabellerna.
+
 # pxweb2rgui 0.23.0
 
 ## Nytt

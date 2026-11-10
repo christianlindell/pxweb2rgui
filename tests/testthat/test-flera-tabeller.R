@@ -287,11 +287,36 @@ test_that("samma kod med olika namn väljs på namn", {
   expect_identical(px_merge_tables(list(a, b))$values$Region$code,
                    c("Riket", "Dalarna", "Gävleborg", "Oslo", "Bergen"))
 
-  # namn som inte går att välja var för sig räknas
+  # namn som inte går att välja var för sig räknas (X har olika koder, så namnen gäller)
   a <- ft_tab("A"); b <- ft_tab("B")
   a$values$ContentsCode <- data.frame(code = c("1", "2"), label = c("X", "X"))
-  b$values$ContentsCode <- data.frame(code = "1", label = "Y")
+  b$values$ContentsCode <- data.frame(code = c("1", "3"), label = c("Y", "X"))
   expect_identical(px_merge_tables(list(a, b))$dropped$ContentsCode, 1L)
+})
+
+test_that("samma kod med olika formulering väljs på kod", {
+  # som SNI2007 i SCB:s TAB1786 och TAB5837: samma koder, olika ordalydelse
+  a <- ft_tab("A"); b <- ft_tab("B")
+  a$values$ContentsCode <- data.frame(
+    code = c("A-U+US", "A", "B+C"),
+    label = c("Total", "företag inom jordbruk, skogsbruk och fiske",
+              "tillverkningsindustri; gruvor och mineralutvinningsindustri"))
+  b$values$ContentsCode <- data.frame(
+    code = c("A", "B+C"),
+    label = c("jordbruk, skogsbruk och fiske", "tillverkning och utvinning"))
+  m <- px_merge_tables(list(a, b))
+  v <- m$values$ContentsCode
+  expect_identical(v$code, c("A-U+US", "A", "B+C"))
+  expect_identical(v$label[2:3], a$values$ContentsCode$label[2:3])
+  expect_identical(v$common, c(FALSE, TRUE, TRUE))
+  expect_length(m$dropped, 0)
+
+  # frågan innehåller koden, och båda tabellerna får den
+  for_b <- .pxweb2_query_for_table(list(ContentsCode = "A", Tid = "*"), b$variables, b$values)
+  expect_identical(for_b$query$ContentsCode, "A")
+  cells <- px_table_cells(list(a, b), list(
+    Region = "00", Kon = NA, Alder = NA, ContentsCode = "A", Tid = "*"))
+  expect_true(all(cells > 0))
 })
 
 test_that("tiden sorteras på namn, inte på kod som text", {
