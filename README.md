@@ -18,8 +18,7 @@ gränssnittet.
 install.packages(c("bslib", "dplyr", "DT", "htmltools", "httr", "jsonlite",
                    "purrr", "rjstat", "rlang", "shiny", "stringr", "tibble",
                    "tidyr"))
-install.packages("C:/Users/chris/OneDrive/R_claude/pxweb2rtgui/pxweb2rgui_0.20.1.tar.gz",
-                 repos = NULL, type = "source")
+remotes::install_github("christianlindell/pxweb2rgui")
 ```
 
 Rekommenderade extrapaket: `writexl`, `nanoparquet`, `clipr`, `janitor` och
