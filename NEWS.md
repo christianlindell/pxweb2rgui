@@ -1,3 +1,14 @@
+# pxweb2rgui 0.23.2
+
+## Rättat
+
+* PxWeb API v1: en variabel vars värden saknas i tabellens metadata får nu sina värden
+  från data. Skolverket utelämnar värdena när de är många, till exempel de cirka 5 000
+  huvudmännen i "Underlag för analys för förskola (enskild huvudman)". Variabeln var då
+  tom i gränssnittet och gick inte att hämta. Nu läses koderna och namnen med ett litet
+  anrop (alla värden för variabeln, ett värde för de andra), och värdena kan väljas på
+  namn eller kod som vanligt. Går det inte att läsa dem ger det en varning.
+
 # pxweb2rgui 0.23.1
 
 ## Rättat

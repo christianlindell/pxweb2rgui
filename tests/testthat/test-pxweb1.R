@@ -612,3 +612,70 @@ test_that("a code column leaves numbers in other labels than regions alone", {
   expect_identical(d[["grupp"]], "Sju")
   expect_false("grupp_code" %in% names(d))
 })
+
+# Som Skolverkets huvudmän: metadata har bara code och text för en variabel med
+# många värden. Värdena läses då från data, med ett litet anrop.
+v1_utan_varden <- function(seen, data_status = 200L) {
+  list(
+    get = function(url, ..., query = NULL) {
+      if (grepl("?config", url, fixed = TRUE)) {
+        return(v1_response(url, '{"maxValues":100,"maxCells":1000,"maxCalls":30,"timeWindow":10}'))
+      }
+      if (grepl("/Hm[.]px$", url)) {
+        return(v1_response(url, paste0("﻿", '{"title":"Huvudmän","variables":[
+          {"code":"variable","text":"mått","values":["0","1"],"valueTexts":["Antal","Andel"]},
+          {"code":"level","text":"huvudman/verksamhet"},
+          {"code":"time","text":"år","values":["2024","2025"],"valueTexts":["2024","2025"],"time":true}]}')))
+      }
+      v1_response(url, "{}", 400L)
+    },
+    post = function(url, ..., body) {
+      seen$bodies <- c(seen$bodies, as.character(body))
+      if (data_status != 200L) return(v1_response(url, "{}", data_status))
+      v1_response(url, paste0("﻿", '{"version":"2.0","class":"dataset","id":["variable","level","time"],
+        "size":[1,3,1],"dimension":{
+        "variable":{"label":"mått","category":{"index":{"0":0},"label":{"0":"Antal"}}},
+        "level":{"label":"huvudman/verksamhet","category":{"index":{"00":0,"556":1,"559":2},
+          "label":{"00":"RIKET: TOTALT","556":"AB Ett (556): HUVUDMAN","559":"AB Två (559): HUVUDMAN"}}},
+        "time":{"label":"år","category":{"index":{"2024":0},"label":{"2024":"2024"}}}},
+        "value":[10,4,6]}'))
+    }
+  )
+}
+
+test_that("values missing from the metadata are read from the data", {
+  pxweb2_clear_cache()
+  on.exit(pxweb2_clear_cache())
+  seen <- new.env()
+  m <- v1_utan_varden(seen)
+  local_mocked_bindings(.pxweb2_GET = m$get, .pxweb2_POST = m$post)
+
+  meta <- pxweb2_get_metadata("A/Hm.px", base_url = v1_url)
+  expect_identical(names(meta$dimension$level$category$label), c("00", "556", "559"))
+  expect_identical(unlist(meta$dimension$level$category$label, use.names = FALSE),
+                   c("RIKET: TOTALT", "AB Ett (556): HUVUDMAN", "AB Två (559): HUVUDMAN"))
+  # alla värden för variabeln utan värden, det första för de andra
+  q <- jsonlite::fromJSON(seen$bodies[1])$query
+  expect_identical(q$selection$filter, c("item", "all", "item"))
+  expect_identical(as.character(unlist(q$selection$values)), c("0", "*", "2024"))
+
+  # metadata sparas, så att samma tabell inte frågas igen
+  pxweb2_get_metadata("A/Hm.px", base_url = v1_url)
+  expect_length(seen$bodies, 1)
+
+  # värdena går att välja på namn, och koden skickas
+  suppressWarnings(pxr_pxweb2_get_data("A/Hm.px", base_url = v1_url, quiet = TRUE,
+    query = list(variable = "Antal", level = "AB Två (559): HUVUDMAN", time = "2024")))
+  sel <- jsonlite::fromJSON(seen$bodies[2])$query$selection$values
+  expect_identical(as.character(sel[[2]]), "559")
+})
+
+test_that("a variable whose values cannot be read gives a warning, not an error", {
+  pxweb2_clear_cache()
+  on.exit(pxweb2_clear_cache())
+  m <- v1_utan_varden(new.env(), data_status = 400L)
+  local_mocked_bindings(.pxweb2_GET = m$get, .pxweb2_POST = m$post)
+  expect_warning(meta <- pxweb2_get_metadata("A/Hm.px", base_url = v1_url),
+                 "no values for the variable 'huvudman/verksamhet'")
+  expect_length(meta$dimension$level$category$label, 0)
+})

@@ -223,7 +223,54 @@
   if (is.null(raw$variables)) {
     stop("'", table_id, "' on ", base_url, " is a folder, not a table.", call. = FALSE)
   }
+  raw <- .pxweb1_fill_missing_values(raw, meta_url, table_id)
   .pxweb2_cache_set(meta_url, .pxweb1_metadata(raw, table_id))
+}
+
+# Some sites leave out the values of a variable with many values: Skolverket gives
+# only {code, text} for its ~5,000 principal organisers ("huvudman"). The codes and
+# labels are then read from the data, with all values of those variables and the
+# first value of the others, so a single small call. If it fails, the variable stays
+# without values and a warning says so.
+.pxweb1_fill_missing_values <- function(raw, meta_url, table_id) {
+  empty <- vapply(raw$variables, function(v) length(v$values) == 0, TRUE)
+  if (!any(empty)) return(raw)
+
+  query <- lapply(raw$variables, function(v) {
+    selection <- if (length(v$values) == 0) list(filter = "all", values = list("*")) else
+      list(filter = "item", values = list(as.character(v$values[[1]])))
+    list(code = v$code, selection = selection)
+  })
+  body <- jsonlite::toJSON(list(query = query, response = list(format = "json-stat2")),
+                           auto_unbox = TRUE)
+  data <- tryCatch({
+    resp <- .pxweb2_POST(meta_url, body = body, encode = "raw",
+                         httr::content_type_json(), httr::accept_json())
+    if (httr::status_code(resp) == 200) {
+      jsonlite::fromJSON(.pxweb1_strip_bom(httr::content(resp, "text", encoding = "UTF-8")),
+                         simplifyVector = FALSE)
+    }
+  }, error = function(e) NULL)
+
+  for (i in which(empty)) {
+    v <- raw$variables[[i]]
+    category <- data$dimension[[v$code]]$category
+    # index is an object {code: position} or an array of codes in json-stat2
+    index <- category$index
+    codes <- if (is.null(names(index))) as.character(unlist(index)) else
+      names(index)[order(unlist(index))]
+    if (length(codes) == 0) {
+      warning("The metadata of '", table_id, "' has no values for the variable '",
+              v$text %||% v$code, "', and they could not be read from the data either.",
+              call. = FALSE)
+      next
+    }
+    labels <- vapply(codes, function(k) as.character(category$label[[k]] %||% k), "",
+                     USE.NAMES = FALSE)
+    raw$variables[[i]]$values <- as.list(codes)
+    raw$variables[[i]]$valueTexts <- as.list(labels)
+  }
+  raw
 }
 
 # The time of the table's latest update comes from its folder's listing.
